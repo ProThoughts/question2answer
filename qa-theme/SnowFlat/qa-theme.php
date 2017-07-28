@@ -74,11 +74,33 @@ class qa_html_theme extends qa_html_theme_base
 		if ($this->isRTL)
 			$this->content['css_src'][] = $this->rooturl . 'qa-styles-rtl.css?' . QA_VERSION;
 
-		// add Ubuntu font CSS file from Google Fonts
-		if ($this->localfonts)
-			$this->content['css_src'][] = $this->rooturl . 'fonts/ubuntu.css?' . QA_VERSION;
-		else
-			$this->content['css_src'][] = '//fonts.googleapis.com/css?family=Ubuntu:400,700,400italic,700italic';
+		if ($this->localfonts) {
+			// add Ubuntu font locally (inlined for speed)
+			$this->output_array(array(
+				'<style>',
+				'@font-face {',
+				' font-family: "Ubuntu"; font-style: normal; font-weight: 400;',
+				' src: local("Ubuntu"), url("' . $this->rooturl . 'fonts/Ubuntu-regular.woff") format("woff");',
+				'}',
+				'@font-face {',
+				' font-family: "Ubuntu"; font-style: normal; font-weight: 700;',
+				' src: local("Ubuntu Bold"), local("Ubuntu-Bold"), url("' . $this->rooturl . 'fonts/Ubuntu-700.woff") format("woff");',
+				'}',
+				'@font-face {',
+				' font-family: "Ubuntu"; font-style: italic; font-weight: 400;',
+				' src: local("Ubuntu Italic"), local("Ubuntu-Italic"), url("' . $this->rooturl . 'fonts/Ubuntu-italic.woff") format("woff");',
+				'}',
+				'@font-face {',
+				' font-family: "Ubuntu"; font-style: italic; font-weight: 700;',
+				' src: local("Ubuntu Bold Italic"), local("Ubuntu-BoldItalic"), url("' . $this->rooturl . 'fonts/Ubuntu-700italic.woff") format("woff");',
+				'}',
+				'</style>',
+			));
+		}
+		else {
+			// add Ubuntu font CSS file from Google Fonts
+			$this->content['css_src'][] = 'https://fonts.googleapis.com/css?family=Ubuntu:400,400i,700,700i';
+		}
 
 		parent::head_css();
 
@@ -201,8 +223,8 @@ class qa_html_theme extends qa_html_theme_base
 	 * Remove the '-' from the note for the category page (notes).
 	 *
 	 * @since Snow 1.4
-	 * @param type $navlink
-	 * @param type $class
+	 * @param array $navlink
+	 * @param string $class
 	 */
 	public function nav_link($navlink, $class)
 	{
@@ -303,7 +325,7 @@ class qa_html_theme extends qa_html_theme_base
 			$this->output_raw($this->content['sidepanel']);
 		$this->feed();
 		$this->widgets('side', 'bottom');
-		$this->output('</div>', '');
+		$this->output('</div> <!-- qa-sidepanel -->', '');
 	}
 
 	/**
@@ -318,7 +340,7 @@ class qa_html_theme extends qa_html_theme_base
 			if (!empty($sidebar)) {
 				$this->output('<div class="qa-sidebar ' . $this->welcome_widget_class . '">');
 				$this->output_raw($sidebar);
-				$this->output('</div>', '');
+				$this->output('</div> <!-- qa-sidebar -->', '');
 			}
 		}
 	}
@@ -346,13 +368,11 @@ class qa_html_theme extends qa_html_theme_base
 	}
 
 	/**
-	 * Add RSS feeds icon and closed icon for closed questions
-	 *
-	 * @since Snow 1.4
+	 * Add RSS feeds icon
 	 */
-	public function title()
+	public function favorite()
 	{
-		$q_view = isset($this->content['q_view']) ? $this->content['q_view'] : null;
+		parent::favorite();
 
 		// RSS feed link in title
 		if (isset($this->content['feed']['url'])) {
@@ -360,6 +380,16 @@ class qa_html_theme extends qa_html_theme_base
 			$label = isset($feed['label']) ? $feed['label'] : '';
 			$this->output('<a href="' . $feed['url'] . '" title="' . $label . '"><i class="icon-rss qam-title-rss"></i></a>');
 		}
+	}
+
+	/**
+	 * Add closed icon for closed questions
+	 *
+	 * @since Snow 1.4
+	 */
+	public function title()
+	{
+		$q_view = isset($this->content['q_view']) ? $this->content['q_view'] : null;
 
 		// link title where appropriate
 		$url = isset($q_view['url']) ? $q_view['url'] : false;
@@ -401,15 +431,18 @@ class qa_html_theme extends qa_html_theme_base
 	 * Prevent display view counter on usual place
 	 *
 	 * @since Snow 1.4
-	 * @param type $q_item
+	 * @param array $q_item
 	 */
-	public function view_count($q_item) {}
+	public function view_count($q_item)
+	{
+		// do nothing
+	}
 
 	/**
 	 * Add view counter to question view
 	 *
 	 * @since Snow 1.4
-	 * @param type $q_view
+	 * @param array $q_view
 	 */
 	public function q_view_stats($q_view)
 	{
@@ -426,7 +459,7 @@ class qa_html_theme extends qa_html_theme_base
 	 * Modify user whometa, move to top
 	 *
 	 * @since Snow 1.4
-	 * @param type $q_view
+	 * @param array $q_view
 	 */
 	public function q_view_main($q_view)
 	{
@@ -460,7 +493,7 @@ class qa_html_theme extends qa_html_theme_base
 	 * Move user whometa to top in answer
 	 *
 	 * @since Snow 1.4
-	 * @param type $a_item
+	 * @param array $a_item
 	 */
 	public function a_item_main($a_item)
 	{
@@ -509,7 +542,7 @@ class qa_html_theme extends qa_html_theme_base
 	 * Move user whometa to top in comment
 	 *
 	 * @since Snow 1.4
-	 * @param type $c_item
+	 * @param array $c_item
 	 */
 	public function c_item_main($c_item)
 	{
@@ -602,6 +635,8 @@ class qa_html_theme extends qa_html_theme_base
 	 *
 	 * @since Snow 1.4
 	 * @version 1.0
+	 * @param string $addon_class
+	 * @param string $ids
 	 */
 	private function qam_search($addon_class = null, $ids = null)
 	{

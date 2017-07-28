@@ -29,16 +29,24 @@ require_once QA_INCLUDE_DIR . 'app/captcha.php';
 require_once QA_INCLUDE_DIR . 'db/users.php';
 
 
-//	Check we're not using single-sign on integration, that we're not logged in, and we're not blocked
-
-if (QA_FINAL_EXTERNAL_USERS)
-	qa_fatal_error('User registration is handled by external code');
-
-if (qa_is_logged_in())
+if (qa_is_logged_in()) {
 	qa_redirect('');
+}
+
+// Check we're not using single-sign on integration, that we're not logged in, and we're not blocked
+if (QA_FINAL_EXTERNAL_USERS) {
+	$request = qa_request();
+	$topath = qa_get('to'); // lets user switch between login and register without losing destination page
+	$userlinks = qa_get_login_links(qa_path_to_root(), isset($topath) ? $topath : qa_path($request, $_GET, ''));
+
+	if (!empty($userlinks['register'])) {
+		qa_redirect_raw($userlinks['register']);
+	}
+	qa_fatal_error('User registration should be handled by external code');
+}
 
 
-//	Get information about possible additional fields
+// Get information about possible additional fields
 
 $show_terms = qa_opt('show_register_terms');
 
@@ -52,7 +60,7 @@ foreach ($userfields as $index => $userfield) {
 }
 
 
-//	Check we haven't suspended registration, and this IP isn't blocked
+// Check we haven't suspended registration, and this IP isn't blocked
 
 if (qa_opt('suspend_register_users')) {
 	$qa_content = qa_content_prepare();
@@ -67,7 +75,7 @@ if (qa_user_permit_error()) {
 }
 
 
-//	Process submitted form
+// Process submitted form
 
 if (qa_clicked('doregister')) {
 	require_once QA_INCLUDE_DIR . 'app/limits.php';
@@ -132,7 +140,7 @@ if (qa_clicked('doregister')) {
 }
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

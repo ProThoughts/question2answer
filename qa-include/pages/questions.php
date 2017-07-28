@@ -37,7 +37,7 @@ $start = qa_get_start();
 $userid = qa_get_logged_in_userid();
 
 
-//	Get list of questions, plus category information
+// Get list of questions, plus category information
 
 switch ($sort) {
 	case 'hot':
@@ -68,8 +68,9 @@ list($questions, $categories, $categoryid) = qa_db_select_with_pending(
 );
 
 if ($countslugs) {
-	if (!isset($categoryid))
+	if (!isset($categoryid)) {
 		return include QA_INCLUDE_DIR . 'qa-page-not-found.php';
+	}
 
 	$categorytitlehtml = qa_html($categories[$categoryid]['title']);
 	$nonetitle = qa_lang_html_sub('main/no_questions_in_x', $categorytitlehtml);
@@ -110,7 +111,7 @@ switch ($sort) {
 }
 
 
-//	Prepare and return content for theme
+// Prepare and return content for theme
 
 $qa_content = qa_q_list_page_content(
 	$questions, // questions
