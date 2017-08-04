@@ -252,16 +252,17 @@ function qa_db_posts_answers_recount($firstpostid, $lastpostid)
  */
 function qa_db_users_get_for_recalc_points($startuserid, $count)
 {
-	if (QA_FINAL_EXTERNAL_USERS)
+	if (QA_FINAL_EXTERNAL_USERS) {
 		return qa_db_read_all_values(qa_db_query_sub(
 			'SELECT userid FROM ((SELECT DISTINCT userid FROM ^posts WHERE userid>=# ORDER BY userid LIMIT #) UNION (SELECT DISTINCT userid FROM ^uservotes WHERE userid>=# ORDER BY userid LIMIT #)) x ORDER BY userid LIMIT #',
 			$startuserid, $count, $startuserid, $count, $count
 		));
-	else
+	} else {
 		return qa_db_read_all_values(qa_db_query_sub(
 			'SELECT DISTINCT userid FROM ^users WHERE userid>=# ORDER BY userid LIMIT #',
 			$startuserid, $count
 		));
+	}
 }
 
 
@@ -282,24 +283,26 @@ function qa_db_users_recalc_points($firstuserid, $lastuserid)
 	);
 
 	$zeropoints = 'points=0';
-	foreach ($qa_userpoints_calculations as $field => $calculation)
+	foreach ($qa_userpoints_calculations as $field => $calculation) {
 		$zeropoints .= ', ' . $field . '=0';
+	}
 
 	qa_db_query_sub(
 		'UPDATE ^userpoints SET ' . $zeropoints . ' WHERE userid>=# AND userid<=#', // zero out the rest
 		$firstuserid, $lastuserid
 	);
 
-	if (QA_FINAL_EXTERNAL_USERS)
+	if (QA_FINAL_EXTERNAL_USERS) {
 		qa_db_query_sub(
 			'INSERT IGNORE INTO ^userpoints (userid) SELECT DISTINCT userid FROM ^posts WHERE userid>=# AND userid<=# UNION SELECT DISTINCT userid FROM ^uservotes WHERE userid>=# AND userid<=#',
 			$firstuserid, $lastuserid, $firstuserid, $lastuserid
 		);
-	else
+	} else {
 		qa_db_query_sub(
 			'INSERT IGNORE INTO ^userpoints (userid) SELECT DISTINCT userid FROM ^users WHERE userid>=# AND userid<=#',
 			$firstuserid, $lastuserid
 		);
+	}
 
 	$updatepoints = (int)qa_opt('points_base');
 

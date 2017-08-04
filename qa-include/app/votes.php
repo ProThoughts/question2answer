@@ -52,42 +52,54 @@ function qa_vote_error_html($post, $vote, $userid, $topage)
 		return qa_lang_html('main/vote_disabled_queued');
 	}
 
-	$allowVoting = qa_opt($post['basetype'] == 'Q' ? 'voting_on_qs' : 'voting_on_as');
+	switch($post['basetype'])
+	{
+		case 'Q':
+			$allowVoting = qa_opt('voting_on_qs');
+			break;
+		case 'A':
+			$allowVoting = qa_opt('voting_on_as');
+			break;
+		case 'C':
+			$allowVoting = qa_opt('voting_on_cs');
+			break;
+		default:
+			$allowVoting = false;
+			break;
+	}
 
-	if (($post['basetype'] === 'Q' || $post['basetype'] === 'A') && $allowVoting &&
-		(!isset($post['userid']) || !isset($userid) || $post['userid'] != $userid)
-	) {
-		$permiterror = qa_user_post_permit_error(($post['basetype'] == 'Q') ? 'permit_vote_q' : 'permit_vote_a', $post, QA_LIMIT_VOTES);
-
-		$errordownonly = !$permiterror && $vote < 0;
-		if ($errordownonly) {
-			$permiterror = qa_user_post_permit_error('permit_vote_down', $post);
-		}
-
-		switch ($permiterror) {
-			case false:
-				return false;
-				break;
-
-			case 'login':
-				return qa_insert_login_links(qa_lang_html('main/vote_must_login'), $topage);
-				break;
-
-			case 'confirm':
-				return qa_insert_login_links(qa_lang_html($errordownonly ? 'main/vote_down_must_confirm' : 'main/vote_must_confirm'), $topage);
-				break;
-
-			case 'limit':
-				return qa_lang_html('main/vote_limit');
-				break;
-
-			default:
-				return qa_lang_html('users/no_permission');
-				break;
-		}
-	} else {
+	if (!$allowVoting || (isset($post['userid']) && isset($userid) && $post['userid'] == $userid)) {
 		// voting option should not have been presented (but could happen due to options change)
 		return qa_lang_html('main/vote_not_allowed');
+	}
+
+	$permiterror = qa_user_post_permit_error(($post['basetype'] == 'Q') ? 'permit_vote_q' : 'permit_vote_a', $post, QA_LIMIT_VOTES);
+
+	$errordownonly = !$permiterror && $vote < 0;
+	if ($errordownonly) {
+		$permiterror = qa_user_post_permit_error('permit_vote_down', $post);
+	}
+
+	switch ($permiterror) {
+		case false:
+			return false;
+			break;
+
+		case 'login':
+			return qa_insert_login_links(qa_lang_html('main/vote_must_login'), $topage);
+			break;
+
+		case 'confirm':
+			return qa_insert_login_links(qa_lang_html($errordownonly ? 'main/vote_down_must_confirm' : 'main/vote_must_confirm'), $topage);
+			break;
+
+		case 'limit':
+			return qa_lang_html('main/vote_limit');
+			break;
+
+		default:
+			return qa_lang_html('users/no_permission');
+			break;
 	}
 }
 
@@ -100,7 +112,7 @@ function qa_vote_error_html($post, $vote, $userid, $topage)
  * @param $handle
  * @param $cookieid
  * @param $vote
- * @return mixed
+ * @return void
  */
 function qa_vote_set($post, $userid, $handle, $cookieid, $vote)
 {
@@ -118,34 +130,42 @@ function qa_vote_set($post, $userid, $handle, $cookieid, $vote)
 	qa_db_uservote_set($post['postid'], $userid, $vote);
 	qa_db_post_recount_votes($post['postid']);
 
-	$postisanswer = ($post['basetype'] == 'A');
+	if (!in_array($post['basetype'], array('Q', 'A', 'C'))) {
+		return;
+	}
 
-	if ($postisanswer) {
+	$prefix = strtolower($post['basetype']);
+
+	if ($prefix === 'a') {
 		qa_db_post_acount_update($post['parentid']);
 		qa_db_unupaqcount_update();
 	}
 
 	$columns = array();
 
-	if ($vote > 0 || $oldvote > 0)
-		$columns[] = $postisanswer ? 'aupvotes' : 'qupvotes';
+	if ($vote > 0 || $oldvote > 0) {
+		$columns[] = $prefix . 'upvotes';
+	}
 
-	if ($vote < 0 || $oldvote < 0)
-		$columns[] = $postisanswer ? 'adownvotes' : 'qdownvotes';
+	if ($vote < 0 || $oldvote < 0) {
+		$columns[] = $prefix . 'downvotes';
+	}
 
 	qa_db_points_update_ifuser($userid, $columns);
 
-	qa_db_points_update_ifuser($post['userid'], array($postisanswer ? 'avoteds' : 'qvoteds', 'upvoteds', 'downvoteds'));
+	qa_db_points_update_ifuser($post['userid'], array($prefix . 'voteds', 'upvoteds', 'downvoteds'));
 
-	if ($post['basetype'] == 'Q')
+	if ($prefix === 'q') {
 		qa_db_hotness_update($post['postid']);
+	}
 
-	if ($vote < 0)
-		$event = $postisanswer ? 'a_vote_down' : 'q_vote_down';
-	elseif ($vote > 0)
-		$event = $postisanswer ? 'a_vote_up' : 'q_vote_up';
-	else
-		$event = $postisanswer ? 'a_vote_nil' : 'q_vote_nil';
+	if ($vote < 0) {
+		$event = $prefix . '_vote_down';
+	} elseif ($vote > 0) {
+		$event = $prefix . '_vote_up';
+	} else {
+		$event = $prefix . '_vote_nil';
+	}
 
 	qa_report_event($event, $userid, $handle, $cookieid, array(
 		'postid' => $post['postid'],
@@ -199,9 +219,9 @@ function qa_flag_error_html($post, $userid, $topage)
 			case false:
 				return false;
 		}
-
-	} else
+	} else {
 		return qa_lang_html('question/flag_not_allowed'); // flagging option should not have been presented
+	}
 }
 
 

@@ -642,13 +642,13 @@ function qa_message_html_defaults()
 
 
 /**
- * Return $voteview parameter to pass to qa_post_html_fields() in qa-app-format.php for the post in $postorbasetype
- * with buttons enabled if appropriate (based on whether $full post shown) unless $enabledif is false.
- * For compatibility $postorbasetype can also just be a basetype, i.e. 'Q', 'A' or 'C'
- * @param $postorbasetype
- * @param bool $full
- * @param bool $enabledif
- * @return bool|string
+ * Return $voteview parameter to pass to qa_post_html_fields() in qa-app-format.php.
+ * @param $postorbasetype The post, or for compatibility just a basetype, i.e. 'Q', 'A' or 'C'
+ * @param bool $full Whether full post is shown
+ * @param bool $enabledif Whether to do checks for voting buttons (i.e. will always disable voting if false)
+ * @return bool|string Possible values:
+ *   updown, updown-disabled-page, updown-disabled-level, updown-uponly-level, updown-disabled-approve, updown-uponly-approve
+ *   net, net-disabled-page, net-disabled-level, net-uponly-level, net-disabled-approve, net-uponly-approve
  */
 function qa_get_vote_view($postorbasetype, $full = false, $enabledif = true)
 {
@@ -657,10 +657,10 @@ function qa_get_vote_view($postorbasetype, $full = false, $enabledif = true)
 	// The 'level' and 'approve' permission errors are taken care of by disabling the voting buttons.
 	// Others are reported to the user after they click, in qa_vote_error_html(...)
 
-	if (is_array($postorbasetype)) { // deal with dual-use parameter
+	// deal with dual-use parameter
+	if (is_array($postorbasetype)) {
 		$basetype = $postorbasetype['basetype'];
 		$post = $postorbasetype;
-
 	} else {
 		$basetype = $postorbasetype;
 		$post = null;
@@ -668,36 +668,50 @@ function qa_get_vote_view($postorbasetype, $full = false, $enabledif = true)
 
 	$disabledsuffix = '';
 
-	if ($basetype == 'Q' || $basetype == 'A') {
-		$view = $basetype == 'A' ? qa_opt('voting_on_as') : qa_opt('voting_on_qs');
+	switch($basetype)
+	{
+		case 'Q':
+			$view = qa_opt('voting_on_qs');
+			$permitOpt = 'permit_vote_q';
+			break;
+		case 'A':
+			$view = qa_opt('voting_on_as');
+			$permitOpt = 'permit_vote_a';
+			break;
+		case 'C':
+			$view = qa_opt('voting_on_cs');
+			$permitOpt = 'permit_vote_c';
+			break;
+		default:
+			$view = false;
+			break;
+	}
 
-		if (!($enabledif && ($basetype == 'A' || $full || !qa_opt('voting_on_q_page_only'))))
-			$disabledsuffix = '-disabled-page';
+	if (!$view) {
+		return false;
+	}
 
+	if (!$enabledif || ($basetype == 'Q' && !$full && qa_opt('voting_on_q_page_only'))) {
+		$disabledsuffix = '-disabled-page';
+	}
+	else {
+		$permiterror = isset($post) ? qa_user_post_permit_error($permitOpt, $post) : qa_user_permit_error($permitOpt);
+
+		if ($permiterror == 'level')
+			$disabledsuffix = '-disabled-level';
+		elseif ($permiterror == 'approve')
+			$disabledsuffix = '-disabled-approve';
 		else {
-			if ($basetype == 'A')
-				$permiterror = isset($post) ? qa_user_post_permit_error('permit_vote_a', $post) : qa_user_permit_error('permit_vote_a');
-			else
-				$permiterror = isset($post) ? qa_user_post_permit_error('permit_vote_q', $post) : qa_user_permit_error('permit_vote_q');
+			$permiterrordown = isset($post) ? qa_user_post_permit_error('permit_vote_down', $post) : qa_user_permit_error('permit_vote_down');
 
-			if ($permiterror == 'level')
-				$disabledsuffix = '-disabled-level';
-			elseif ($permiterror == 'approve')
-				$disabledsuffix = '-disabled-approve';
-			else {
-				$permiterrordown = isset($post) ? qa_user_post_permit_error('permit_vote_down', $post) : qa_user_permit_error('permit_vote_down');
-
-				if ($permiterrordown == 'level')
-					$disabledsuffix = '-uponly-level';
-				elseif ($permiterrordown == 'approve')
-					$disabledsuffix = '-uponly-approve';
-			}
+			if ($permiterrordown == 'level')
+				$disabledsuffix = '-uponly-level';
+			elseif ($permiterrordown == 'approve')
+				$disabledsuffix = '-uponly-approve';
 		}
+	}
 
-	} else
-		$view = false;
-
-	return $view ? ((qa_opt('votes_separated') ? 'updown' : 'net') . $disabledsuffix) : false;
+	return (qa_opt('votes_separated') ? 'updown' : 'net') . $disabledsuffix;
 }
 
 
