@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-app-options.php
 	Description: Getting and setting admin options (application level)
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -642,7 +641,7 @@ function qa_message_html_defaults()
 
 
 /**
- * Return $voteview parameter to pass to qa_post_html_fields() in qa-app-format.php.
+ * Return $voteview parameter to pass to qa_post_html_fields() in /qa-include/app/format.php.
  * @param $postorbasetype The post, or for compatibility just a basetype, i.e. 'Q', 'A' or 'C'
  * @param bool $full Whether full post is shown
  * @param bool $enabledif Whether to do checks for voting buttons (i.e. will always disable voting if false)

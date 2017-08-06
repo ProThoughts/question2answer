@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-question-post.php
 	Description: More control for question page if it's submitted by HTTP POST
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -229,7 +228,7 @@ foreach ($commentsfollows as $commentid => $comment) {
 }
 
 
-// Functions used above - also see functions in qa-page-question-submit.php (which are shared with Ajax)
+// Functions used above - also see functions in /qa-include/pages/question-submit.php (which are shared with Ajax)
 
 /*
 	Redirects back to the question page, with the specified parameters

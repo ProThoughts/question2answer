@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-app-posts.php
 	Description: Higher-level functions to create and manipulate posts
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -251,7 +250,7 @@ function qa_post_set_hidden($postid, $hidden = true, $byuserid = null)
 
 /**
  * Change the status of $postid to $status, which should be one of the QA_POST_STATUS_* constants defined in
- * qa-app-post-update.php. Pass the identify of the user making this change in $byuserid (or null for a silent change).
+ * /qa-include/app/post-update.php. Pass the identify of the user making this change in $byuserid (or null for a silent change).
  * @param $postid
  * @param $status
  * @param $byuserid

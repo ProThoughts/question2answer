@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-app-users-edit.php
 	Description: User management (application level) for creating/modifying users
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -331,7 +330,7 @@ function qa_complete_confirm($userid, $email, $handle)
 
 
 /**
- * Set the user level of user $userid with $handle to $level (one of the QA_USER_LEVEL_* constraints in qa-app-users.php)
+ * Set the user level of user $userid with $handle to $level (one of the QA_USER_LEVEL_* constraints in /qa-include/app/users.php)
  * Pass the previous user level in $oldlevel. Reports the appropriate event, assumes change performed by the logged in user.
  * @param $userid
  * @param $handle

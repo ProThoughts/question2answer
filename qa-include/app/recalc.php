@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-app-recalc.php
 	Description: Managing database recalculations (clean-up operations) and status messages
 
 
@@ -50,14 +49,14 @@
 
 	Recalculated in dorebuildupdates:
 	=================================
-	^sharedevents (all): per-entity event streams (see big comment in qa-db-favorites.php)
+	^sharedevents (all): per-entity event streams (see big comment in /qa-include/db/favorites.php)
 	^userevents (all): per-subscriber event streams
 
 	[but these are not entirely redundant since they can contain historical information no longer in ^posts]
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 

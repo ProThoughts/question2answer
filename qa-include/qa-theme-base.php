@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-theme-base.php
 	Description: Default theme class, broken into lots of little functions for easy overriding
 
 
@@ -247,7 +246,7 @@ class qa_html_theme_base
 
 
 	// From here on, we have a large number of class methods which output particular pieces of HTML markup
-	// The calling chain is initiated from qa-page.php, or qa-ajax-*.php for refreshing parts of a page,
+	// The calling chain is initiated from qa-page.php, or ajax/*.php for refreshing parts of a page,
 	// For most HTML elements, the name of the function is similar to the element's CSS class, for example:
 	// search() outputs <div class="qa-search">, q_list() outputs <div class="qa-q-list">, etc...
 
