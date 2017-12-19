@@ -22,7 +22,7 @@
  * Implements RFC 821 SMTP commands and provides some utility methods for sending mail to an SMTP server.
  * @package PHPMailer
  * @author Chris Ryan
- * @author Marcus Bointon <phpmailer@synchromedia.co.uk>
+ * @author Marcus Bointon <phpmailer@synchromedia.co.uk> 
  */
 class SMTP
 {
