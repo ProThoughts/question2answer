@@ -20,8 +20,8 @@
 */
 
 
-define('QA_VERSION', '1.8.0-beta1'); // also used as suffix for .js and .css requests
-define('QA_BUILD_DATE', '2017-09-07');
+define('QA_VERSION', '1.8.0-beta2'); // also used as suffix for .js and .css requests
+define('QA_BUILD_DATE', '2017-12-23');
 
 
 /**
@@ -409,6 +409,8 @@ function qa_initialize_postdb_plugins()
 
 	$qa_pluginManager->loadPluginsAfterDbInit();
 	qa_load_override_files();
+
+	qa_report_process_stage('plugins_loaded');
 }
 
 
