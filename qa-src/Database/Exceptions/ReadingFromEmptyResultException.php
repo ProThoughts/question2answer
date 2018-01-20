@@ -16,23 +16,19 @@
 	More about this license: http://www.question2answer.org/license.php
 */
 
-namespace Q2A\Http\Exceptions;
+namespace Q2A\Database\Exceptions;
 
-use Q2A\Exceptions\ErrorMessageException;
+use Q2A\Exceptions\FatalErrorException;
 
-class PageNotFoundException extends ErrorMessageException
+class ReadingFromEmptyResultException extends FatalErrorException
 {
 	/**
-	 * PageNotFoundException constructor.
+	 * ReadingFromEmptyResultException constructor.
 	 *
 	 * @param string $message
 	 */
-	public function __construct($message = null)
+	public function __construct($message = 'There has been an attempt to read from an empty database result')
 	{
-		if ($message === null) {
-			$message = qa_lang_html('main/page_not_found');
-		}
-
 		parent::__construct($message);
 	}
 }

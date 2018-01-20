@@ -16,21 +16,21 @@
 	More about this license: http://www.question2answer.org/license.php
 */
 
-namespace Q2A\Http\Exceptions;
+namespace Q2A\Auth;
 
 use Q2A\Exceptions\ErrorMessageException;
 
-class PageNotFoundException extends ErrorMessageException
+class NoPermissionException extends ErrorMessageException
 {
 	/**
-	 * PageNotFoundException constructor.
+	 * NoPermissionException constructor.
 	 *
 	 * @param string $message
 	 */
 	public function __construct($message = null)
 	{
 		if ($message === null) {
-			$message = qa_lang_html('main/page_not_found');
+			$message = qa_lang_html('users/no_permission');
 		}
 
 		parent::__construct($message);

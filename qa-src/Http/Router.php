@@ -21,7 +21,7 @@ namespace Q2A\Http;
 class Router
 {
 	/** @var Route[] */
-	protected $routes;
+	protected $routes = array();
 
 	/** @var array */
 	private $paramsConverter;
@@ -29,10 +29,8 @@ class Router
 	/** @var string */
 	private $httpMethod;
 
-	public function __construct($routeData = array())
+	public function __construct()
 	{
-		$this->routes = $routeData;
-
 		$this->paramsConverter = array(
 			'{str}' => '([^/]+)',
 			'{int}' => '([0-9]+)',
@@ -63,7 +61,7 @@ class Router
 
 			$pathRegex = $this->buildPathRegex($route->getRoutePath());
 			if (preg_match($pathRegex, $request, $matches)) {
-				$route->bindParameters(array_slice($matches, 1));
+				$route->setParameters(array_slice($matches, 1));
 
 				return $route;
 			}

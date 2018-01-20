@@ -18,6 +18,10 @@
 
 namespace Q2A\Controllers\User;
 
+use Q2A\Auth\NoPermissionException;
+use Q2A\Middleware\Auth\InternalUsersOnly;
+use Q2A\Middleware\Auth\MinimumUserLevel;
+
 require_once QA_INCLUDE_DIR . 'db/users.php';
 require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'app/users.php';
@@ -25,6 +29,14 @@ require_once QA_INCLUDE_DIR . 'app/format.php';
 
 class UsersList extends \Q2A\Controllers\BaseController
 {
+	public function __construct()
+	{
+		parent::__construct();
+
+		$this->addMiddleware(new InternalUsersOnly(), array('newest', 'special', 'blocked'));
+		$this->addMiddleware(new MinimumUserLevel(QA_USER_LEVEL_MODERATOR), array('blocked'));
+	}
+
 	/**
 	 * Display top users page (ordered by points)
 	 * @return array $qa_content
@@ -55,19 +67,15 @@ class UsersList extends \Q2A\Controllers\BaseController
 
 	/**
 	 * Display newest users page
+	 *
 	 * @return array $qa_content
+	 * @throws NoPermissionException
 	 */
 	public function newest()
 	{
-		// check we're not using single-sign on integration
-		if (QA_FINAL_EXTERNAL_USERS)
-			qa_fatal_error('User accounts are handled by external code');
-
 		// check we have permission to view this page (moderator or above)
 		if (qa_user_permit_error('permit_view_new_users_page')) {
-			$qa_content = qa_content_prepare();
-			$qa_content['error'] = qa_lang_html('users/no_permission');
-			return $qa_content;
+			throw new NoPermissionException();
 		}
 
 		// callables to fetch user data
@@ -95,19 +103,15 @@ class UsersList extends \Q2A\Controllers\BaseController
 
 	/**
 	 * Display special users page (admins, moderators, etc)
+	 *
 	 * @return array $qa_content
+	 * @throws NoPermissionException
 	 */
 	public function special()
 	{
-		// check we're not using single-sign on integration
-		if (QA_FINAL_EXTERNAL_USERS)
-			qa_fatal_error('User accounts are handled by external code');
-
 		// check we have permission to view this page (moderator or above)
 		if (qa_user_permit_error('permit_view_special_users_page')) {
-			$qa_content = qa_content_prepare();
-			$qa_content['error'] = qa_lang_html('users/no_permission');
-			return $qa_content;
+			throw new NoPermissionException();
 		}
 
 		// callables to fetch user data
@@ -135,17 +139,6 @@ class UsersList extends \Q2A\Controllers\BaseController
 	 */
 	public function blocked()
 	{
-		// check we're not using single-sign on integration
-		if (QA_FINAL_EXTERNAL_USERS)
-			qa_fatal_error('User accounts are handled by external code');
-
-		// check we have permission to view this page (moderator or above)
-		if (qa_get_logged_in_level() < QA_USER_LEVEL_MODERATOR) {
-			$qa_content = qa_content_prepare();
-			$qa_content['error'] = qa_lang_html('users/no_permission');
-			return $qa_content;
-		}
-
 		// callables to fetch user data
 		$fetchUsers = function($start, $pageSize) {
 			list($totalUsers, $users) = qa_db_select_with_pending(

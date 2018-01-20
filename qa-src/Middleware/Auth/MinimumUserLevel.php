@@ -16,23 +16,34 @@
 	More about this license: http://www.question2answer.org/license.php
 */
 
-namespace Q2A\Http\Exceptions;
+namespace Q2A\Middleware\Auth;
 
-use Q2A\Exceptions\ErrorMessageException;
+use Q2A\Auth\NoPermissionException;
+use Q2A\Middleware\BaseMiddleware;
 
-class PageNotFoundException extends ErrorMessageException
+class MinimumUserLevel extends BaseMiddleware
 {
-	/**
-	 * PageNotFoundException constructor.
-	 *
-	 * @param string $message
-	 */
-	public function __construct($message = null)
-	{
-		if ($message === null) {
-			$message = qa_lang_html('main/page_not_found');
-		}
+	private $minimumUserLevel;
 
-		parent::__construct($message);
+	/**
+	 * MinimumUserLevel constructor.
+	 *
+	 * @param int $minimumUserLevel Minimum user level allowed to perform the action
+	 */
+	public function __construct($minimumUserLevel)
+	{
+		$this->minimumUserLevel = $minimumUserLevel;
+	}
+
+	/**
+	 * Throw an exception if the current configuration is set to external users.
+	 *
+	 * @throws NoPermissionException
+	 */
+	public function handle()
+	{
+		if (qa_get_logged_in_level() < $this->minimumUserLevel) {
+			throw new NoPermissionException();
+		}
 	}
 }
