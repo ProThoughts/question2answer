@@ -92,7 +92,7 @@ function qa_vote_click(elem)
 				var mess = document.getElementById('errorbox');
 
 				if (!mess) {
-					var mess = document.createElement('div');
+					mess = document.createElement('div');
 					mess.id = 'errorbox';
 					mess.className = 'qa-error';
 					mess.innerHTML = lines[1];
@@ -152,22 +152,31 @@ function qa_favorite_click(elem)
 	return false;
 }
 
-function qa_ajax_post(operation, params, callback)
+function qa_ajax_post(operation, params, callback, apiVersion)
 {
-	$.extend(params, {qa: 'ajax', qa_operation: operation, qa_root: qa_root, qa_request: qa_request});
+	if (typeof(apiVersion) === 'undefined') {
+		apiVersion = 0;
+	}
 
-	$.post(qa_root, params, function(response) {
-		var header = 'QA_AJAX_RESPONSE';
-		var headerpos = response.indexOf(header);
+	$.extend(params, {qa: 'ajax', qa_operation: operation, qa_root: qa_root, qa_request: qa_request, apiVersion: apiVersion});
 
-		if (headerpos >= 0)
-			callback(response.substr(headerpos + header.length).replace(/^\s+/, '').split("\n"));
-		else
-			callback([]);
+	$.post(qa_root, params, function (response) {
+			if (apiVersion === 0) {
+				var header = 'QA_AJAX_RESPONSE';
+				var headerpos = response.indexOf(header);
 
-	}, 'text').fail(function(jqXHR) {
+				if (headerpos >= 0)
+					callback(response.substr(headerpos + header.length).replace(/^\s+/, '').split("\n"));
+				else
+					callback([]);
+			} else {
+				callback(response);
+			}
+		},
+		apiVersion === 0 ? 'text' : 'json'
+	).fail(function (jqXHR) {
 		if (jqXHR.readyState > 0)
-			callback([])
+			qa_ajax_error();
 	});
 }
 
@@ -648,7 +657,7 @@ function qa_category_select(idprefix, startpath)
 									var addedoption = false;
 
 									if (lines.length > 2) {
-										var subelem = elem.parentNode.insertBefore(document.createElement('span'), elem.nextSibling);
+										subelem = elem.parentNode.insertBefore(document.createElement('span'), elem.nextSibling);
 										subelem.id = idprefix + '_' + l + '_sub';
 										subelem.innerHTML = ' ';
 
