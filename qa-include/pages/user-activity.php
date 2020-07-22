@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-user-activity.php
 	Description: Controller for user page showing recent activity
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -29,10 +28,10 @@ require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'app/format.php';
 
 
-//	$handle, $userhtml are already set by qa-page-user.php - also $userid if using external user integration
+// $handle, $userhtml are already set by /qa-include/page/user.php - also $userid if using external user integration
 
 
-//	Find the recent activity for this user
+// Find the recent activity for this user
 
 $loginuserid = qa_get_logged_in_userid();
 $identifier = QA_FINAL_EXTERNAL_USERS ? $userid : $handle;
@@ -49,14 +48,14 @@ if (!QA_FINAL_EXTERNAL_USERS && !is_array($useraccount)) // check the user exist
 	return include QA_INCLUDE_DIR . 'qa-page-not-found.php';
 
 
-//	Get information on user references
+// Get information on user references
 
 $questions = qa_any_sort_and_dedupe(array_merge($questions, $answerqs, $commentqs, $editqs));
 $questions = array_slice($questions, 0, qa_opt('page_size_activity'));
 $usershtml = qa_userids_handles_html(qa_any_get_userids_handles($questions), false);
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare(true);
 
@@ -66,7 +65,7 @@ else
 	$qa_content['title'] = qa_lang_html_sub('profile/no_posts_by_x', $userhtml);
 
 
-//	Recent activity by this user
+// Recent activity by this user
 
 $qa_content['q_list']['form'] = array(
 	'tags' => 'method="post" action="' . qa_self_html() . '"',
@@ -89,7 +88,7 @@ foreach ($questions as $question) {
 }
 
 
-//	Sub menu for navigation in user pages
+// Sub menu for navigation in user pages
 
 $ismyuser = isset($loginuserid) && $loginuserid == (QA_FINAL_EXTERNAL_USERS ? $userid : $useraccount['userid']);
 $qa_content['navigation']['sub'] = qa_user_sub_navigation($handle, 'activity', $ismyuser);

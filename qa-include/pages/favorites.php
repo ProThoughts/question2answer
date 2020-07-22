@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-favorites.php
 	Description: Controller for page listing user's favorites
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -30,7 +29,7 @@ require_once QA_INCLUDE_DIR . 'app/format.php';
 require_once QA_INCLUDE_DIR . 'app/favorites.php';
 
 
-//	Check that we're logged in
+// Check that we're logged in
 
 $userid = qa_get_logged_in_userid();
 
@@ -38,7 +37,7 @@ if (!isset($userid))
 	qa_redirect('login');
 
 
-//	Get lists of favorites for this user
+// Get lists of favorites for this user
 
 $pagesize_qs = qa_opt('page_size_qs');
 $pagesize_users = qa_opt('page_size_users');
@@ -60,14 +59,14 @@ list($numQs, $questions, $numUsers, $users, $numTags, $tags, $categories) = qa_d
 $usershtml = qa_userids_handles_html(QA_FINAL_EXTERNAL_USERS ? $questions : array_merge($questions, $users));
 
 
-//	Prepare and return content for theme
+// Prepare and return content for theme
 
 $qa_content = qa_content_prepare(true);
 
 $qa_content['title'] = qa_lang_html('misc/my_favorites_title');
 
 
-//	Favorite questions
+// Favorite questions
 
 $qa_content['q_list'] = qa_favorite_q_list_view($questions, $usershtml);
 $qa_content['q_list']['title'] = count($questions) ? qa_lang_html('main/nav_qs') : qa_lang_html('misc/no_favorite_qs');
@@ -77,7 +76,7 @@ if ($numQs['count'] > count($questions)) {
 }
 
 
-//	Favorite users
+// Favorite users
 
 if (!QA_FINAL_EXTERNAL_USERS) {
 	$qa_content['ranking_users'] = qa_favorite_users_view($users, $usershtml);
@@ -89,7 +88,7 @@ if (!QA_FINAL_EXTERNAL_USERS) {
 }
 
 
-//	Favorite tags
+// Favorite tags
 
 if (qa_using_tags()) {
 	$qa_content['ranking_tags'] = qa_favorite_tags_view($tags);
@@ -101,7 +100,7 @@ if (qa_using_tags()) {
 }
 
 
-//	Favorite categories (no pagination)
+// Favorite categories (no pagination)
 
 if (qa_using_categories()) {
 	$qa_content['nav_list_categories'] = qa_favorite_categories_view($categories);
@@ -109,7 +108,7 @@ if (qa_using_categories()) {
 }
 
 
-//	Sub navigation for account pages and suggestion
+// Sub navigation for account pages and suggestion
 
 $qa_content['suggest_next'] = qa_lang_html_sub('misc/suggest_favorites_add', '<span class="qa-favorite-image">&nbsp;</span>');
 

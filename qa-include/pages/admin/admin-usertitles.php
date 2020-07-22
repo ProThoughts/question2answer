@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-usertitles.php
 	Description: Controller for admin page for editing custom user titles
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -29,7 +28,7 @@ require_once QA_INCLUDE_DIR . 'app/admin.php';
 require_once QA_INCLUDE_DIR . 'db/selects.php';
 
 
-//	Get current list of user titles and determine the state of this admin page
+// Get current list of user titles and determine the state of this admin page
 
 $oldpoints = qa_post_text('edit');
 if (!isset($oldpoints))
@@ -38,13 +37,13 @@ if (!isset($oldpoints))
 $pointstitle = qa_get_points_to_titles();
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (!qa_admin_check_privileges($qa_content))
 	return $qa_content;
 
 
-//	Process saving an old or new user title
+// Process saving an old or new user title
 
 $securityexpired = false;
 
@@ -67,7 +66,7 @@ elseif (qa_clicked('dosavetitle')) {
 
 			$errors = array();
 
-			//	Verify the title and points are legitimate
+			// Verify the title and points are legitimate
 
 			if (!strlen($intitle))
 				$errors['title'] = qa_lang('main/field_required');
@@ -81,7 +80,7 @@ elseif (qa_clicked('dosavetitle')) {
 					$errors['points'] = qa_lang('admin/title_already_used');
 			}
 
-			//	Perform appropriate action
+			// Perform appropriate action
 
 			if (isset($pointstitle[$oldpoints])) { // changing existing user title
 				$newpoints = isset($errors['points']) ? $oldpoints : $inpoints;
@@ -94,7 +93,7 @@ elseif (qa_clicked('dosavetitle')) {
 				$pointstitle[$inpoints] = $intitle;
 		}
 
-		//	Save the new option value
+		// Save the new option value
 
 		krsort($pointstitle, SORT_NUMERIC);
 
@@ -110,7 +109,7 @@ elseif (qa_clicked('dosavetitle')) {
 }
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

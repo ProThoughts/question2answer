@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-account.php
 	Description: Controller for user account page
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -32,7 +31,7 @@ require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'util/image.php';
 
 
-//	Check we're not using single-sign on integration, that we're logged in
+// Check we're not using single-sign on integration, that we're logged in
 
 if (QA_FINAL_EXTERNAL_USERS)
 	qa_fatal_error('User accounts are handled by external code');
@@ -43,7 +42,7 @@ if (!isset($userid))
 	qa_redirect('login');
 
 
-//	Get current information on user
+// Get current information on user
 
 list($useraccount, $userprofile, $userpoints, $userfields) = qa_db_select_with_pending(
 	qa_db_user_account_selectspec($userid, true),
@@ -66,7 +65,7 @@ $permit_error = qa_user_permit_error();
 $isblocked = $permit_error !== false;
 $pending_confirmation = $doconfirms && $permit_error == 'confirm';
 
-//	Process profile if saved
+// Process profile if saved
 
 // If the post_max_size is exceeded then the $_POST array is empty so no field processing can be done
 if (qa_post_limit_exceeded())
@@ -168,7 +167,7 @@ else {
 
 			qa_logged_in_user_flush();
 		}
-	} else if (qa_clicked('dosaveprofile') && $pending_confirmation) {
+	} elseif (qa_clicked('dosaveprofile') && $pending_confirmation) {
 		// only allow user to update email if they are not confirmed yet
 		$inemail = qa_post_text('email');
 
@@ -197,7 +196,7 @@ else {
 	}
 
 
-	//	Process change password if clicked
+	// Process change password if clicked
 
 	if (qa_clicked('dochangepassword')) {
 		$inoldpassword = qa_post_text('oldpassword');
@@ -240,7 +239,7 @@ else {
 	}
 }
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 
@@ -346,7 +345,7 @@ if ($isblocked && !$pending_confirmation) {
 	$qa_content['error'] = qa_lang_html('users/no_permission');
 }
 
-//	Avatar upload stuff
+// Avatar upload stuff
 
 if (qa_opt('avatar_allow_gravatar') || qa_opt('avatar_allow_upload')) {
 	$avataroptions = array();
@@ -397,7 +396,7 @@ if (qa_opt('avatar_allow_gravatar') || qa_opt('avatar_allow_upload')) {
 }
 
 
-//	Other profile fields
+// Other profile fields
 
 foreach ($userfields as $userfield) {
 	$value = @$inprofile[$userfield['fieldid']];
@@ -419,14 +418,14 @@ foreach ($userfields as $userfield) {
 }
 
 
-//	Raw information for plugin layers to access
+// Raw information for plugin layers to access
 
 $qa_content['raw']['account'] = $useraccount;
 $qa_content['raw']['profile'] = $userprofile;
 $qa_content['raw']['points'] = $userpoints;
 
 
-//	Change password form
+// Change password form
 
 $qa_content['form_password'] = array(
 	'tags' => 'method="post" action="' . qa_self_html() . '"',

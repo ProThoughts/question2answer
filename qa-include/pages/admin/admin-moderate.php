@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-moderate.php
 	Description: Controller for admin page showing questions, answers and comments waiting for approval
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -30,7 +29,7 @@ require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'app/format.php';
 
 
-//	Find queued questions, answers, comments
+// Find queued questions, answers, comments
 
 $userid = qa_get_logged_in_userid();
 
@@ -41,7 +40,7 @@ list($queuedquestions, $queuedanswers, $queuedcomments) = qa_db_select_with_pend
 );
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (qa_user_maximum_permit_error('permit_moderate')) {
 	$qa_content = qa_content_prepare();
@@ -50,12 +49,12 @@ if (qa_user_maximum_permit_error('permit_moderate')) {
 }
 
 
-//	Check to see if any were approved/rejected here
+// Check to see if any were approved/rejected here
 
 $pageerror = qa_admin_check_clicks();
 
 
-//	Combine sets of questions and remove those this user has no permission to moderate
+// Combine sets of questions and remove those this user has no permission to moderate
 
 $questions = qa_any_sort_by_date(array_merge($queuedquestions, $queuedanswers, $queuedcomments));
 
@@ -67,12 +66,12 @@ if (qa_user_permit_error('permit_moderate')) { // if user not allowed to moderat
 }
 
 
-//	Get information for users
+// Get information for users
 
 $usershtml = qa_userids_handles_html(qa_any_get_userids_handles($questions));
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

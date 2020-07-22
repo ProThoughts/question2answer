@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-favorites.php
 	Description: Controller for sub-page listing user's favorites of a certain type
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -30,7 +29,7 @@ require_once QA_INCLUDE_DIR . 'app/format.php';
 require_once QA_INCLUDE_DIR . 'app/favorites.php';
 
 
-//	Data for functions to run
+// Data for functions to run
 
 $favswitch = array(
 	'questions' => array(
@@ -54,7 +53,7 @@ $favswitch = array(
 );
 
 
-//	Check that we're logged in
+// Check that we're logged in
 
 $userid = qa_get_logged_in_userid();
 
@@ -62,7 +61,7 @@ if (!isset($userid))
 	qa_redirect('login');
 
 
-//	Get lists of favorites of this type
+// Get lists of favorites of this type
 
 $favtype = qa_request_part(1);
 $start = qa_get_start();
@@ -82,7 +81,7 @@ $count = $totalItems['count'];
 $usershtml = qa_userids_handles_html($items);
 
 
-//	Prepare and return content for theme
+// Prepare and return content for theme
 
 $qa_content = qa_content_prepare(true);
 
@@ -91,7 +90,7 @@ $qa_content['title'] = qa_lang_html('misc/my_favorites_title');
 $qa_content[$key] = $fn_view($items, $usershtml);
 
 
-//	Sub navigation for account pages and suggestion
+// Sub navigation for account pages and suggestion
 
 $qa_content['suggest_next'] = qa_lang_html_sub('misc/suggest_favorites_add', '<span class="qa-favorite-image">&nbsp;</span>');
 

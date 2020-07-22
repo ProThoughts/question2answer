@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-widget-activity-count.php
 	Description: Widget module class for activity count plugin
 
 
@@ -40,8 +39,7 @@ class qa_category_list
 
 		if (isset($qa_content['navigation']['cat'])) {
 			$nav = $qa_content['navigation']['cat'];
-		}
-		else {
+		} else {
 			$selectspec = qa_db_category_nav_selectspec(null, true, false, true);
 			$selectspec['caching'] = array(
 				'key' => 'qa_db_category_nav_selectspec:default:full',
@@ -51,7 +49,7 @@ class qa_category_list
 			$nav = qa_category_navigation($navcategories);
 		}
 
-		$this->themeobject->output('<h2>'.qa_lang_html('main/nav_categories').'</h2>');
+		$this->themeobject->output('<h2>' . qa_lang_html('main/nav_categories') . '</h2>');
 		$this->themeobject->set_context('nav_type', 'cat');
 		$this->themeobject->nav_list($nav, 'nav-cat', 1);
 		$this->themeobject->nav_clear('cat');

@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-points.php
 	Description: Controller for admin page for settings about user points
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -32,13 +31,14 @@ require_once QA_INCLUDE_DIR . 'app/admin.php';
 require_once QA_INCLUDE_DIR . 'util/sort.php';
 
 
-//	Check admin privileges
+// Check admin privileges
 
-if (!qa_admin_check_privileges($qa_content))
+if (!qa_admin_check_privileges($qa_content)) {
 	return $qa_content;
+}
 
 
-//	Process user actions
+// Process user actions
 
 $securityexpired = false;
 $recalculate = false;
@@ -47,25 +47,23 @@ $optionnames = qa_db_points_option_names();
 if (qa_clicked('doshowdefaults')) {
 	$options = array();
 
-	foreach ($optionnames as $optionname)
+	foreach ($optionnames as $optionname) {
 		$options[$optionname] = qa_default_option($optionname);
-
+	}
 } else {
-	if (qa_clicked('docancel'))
-		;
-
-	elseif (qa_clicked('dosaverecalc')) {
-		if (!qa_check_form_security_code('admin/points', qa_post_text('code')))
+	if (qa_clicked('dosaverecalc')) {
+		if (!qa_check_form_security_code('admin/points', qa_post_text('code'))) {
 			$securityexpired = true;
-
-		else {
-			foreach ($optionnames as $optionname)
+		} else {
+			foreach ($optionnames as $optionname) {
 				qa_set_option($optionname, (int)qa_post_text('option_' . $optionname));
+			}
 
-			if (!qa_post_text('has_js'))
+			if (!qa_post_text('has_js')) {
 				qa_redirect('admin/recalc', array('dorecalcpoints' => 1));
-			else
+			} else {
 				$recalculate = true;
+			}
 		}
 	}
 
@@ -73,7 +71,7 @@ if (qa_clicked('doshowdefaults')) {
 }
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 
@@ -107,7 +105,6 @@ if (qa_clicked('doshowdefaults')) {
 		'tags' => 'name="docancel"',
 		'label' => qa_lang_html('main/cancel_button'),
 	);
-
 } else {
 	if ($recalculate) {
 		$qa_content['form']['ok'] = '<span id="recalc_ok"></span>';
@@ -145,15 +142,19 @@ foreach ($optionnames as $optionname) {
 
 		case 'points_per_q_voted_up':
 		case 'points_per_a_voted_up':
+		case 'points_per_c_voted_up':
 		case 'points_q_voted_max_gain':
 		case 'points_a_voted_max_gain':
+		case 'points_c_voted_max_gain':
 			$prefix = '+';
 			break;
 
 		case 'points_per_q_voted_down':
 		case 'points_per_a_voted_down':
+		case 'points_per_c_voted_down':
 		case 'points_q_voted_max_loss':
 		case 'points_a_voted_max_loss':
+		case 'points_c_voted_max_loss':
 			$prefix = '&ndash;';
 			break;
 
@@ -172,8 +173,9 @@ foreach ($optionnames as $optionname) {
 }
 
 qa_array_insert($qa_content['form']['fields'], 'points_post_a', array('blank0' => array('type' => 'blank')));
-qa_array_insert($qa_content['form']['fields'], 'points_vote_up_q', array('blank1' => array('type' => 'blank')));
-qa_array_insert($qa_content['form']['fields'], 'points_multiple', array('blank2' => array('type' => 'blank')));
+qa_array_insert($qa_content['form']['fields'], 'points_per_c_voted_up', array('blank1' => array('type' => 'blank')));
+qa_array_insert($qa_content['form']['fields'], 'points_vote_up_q', array('blank2' => array('type' => 'blank')));
+qa_array_insert($qa_content['form']['fields'], 'points_multiple', array('blank3' => array('type' => 'blank')));
 
 
 $qa_content['navigation']['sub'] = qa_admin_sub_navigation();

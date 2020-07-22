@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-users.php
 	Description: Controller for top scoring users page
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -30,7 +29,7 @@ require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'app/format.php';
 
 
-//	Get list of all users
+// Get list of all users
 
 $start = qa_get_start();
 $users = qa_db_select_with_pending(qa_db_top_users_selectspec($start, qa_opt_if_loaded('page_size_users')));
@@ -41,7 +40,7 @@ $users = array_slice($users, 0, $pagesize);
 $usershtml = qa_userids_handles_html($users);
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 
@@ -50,7 +49,8 @@ $qa_content['title'] = qa_lang_html('main/highest_users');
 $qa_content['ranking'] = array(
 	'items' => array(),
 	'rows' => ceil($pagesize / qa_opt('columns_users')),
-	'type' => 'users'
+	'type' => 'users',
+	'sort' => 'points',
 );
 
 if (count($users)) {
@@ -74,9 +74,7 @@ if (count($users)) {
 	$qa_content['title'] = qa_lang_html('main/no_active_users');
 }
 
-
-// set the canonical url based on possible pagination
-$qa_content['canonical'] = qa_path_html(qa_request(), ($start > 0 ? array('start' => $start) : null), qa_opt('site_url'));
+$qa_content['canonical'] = qa_get_canonical();
 
 $qa_content['page_links'] = qa_html_page_links(qa_request(), $start, $pagesize, $usercount, qa_opt('pages_prev_next'));
 

@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-flagged.php
 	Description: Controller for admin page showing posts with the most flags
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -30,7 +29,7 @@ require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'app/format.php';
 
 
-//	Find most flagged questions, answers, comments
+// Find most flagged questions, answers, comments
 
 $userid = qa_get_logged_in_userid();
 
@@ -39,7 +38,7 @@ $questions = qa_db_select_with_pending(
 );
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (qa_user_maximum_permit_error('permit_hide_show')) {
 	$qa_content = qa_content_prepare();
@@ -48,12 +47,12 @@ if (qa_user_maximum_permit_error('permit_hide_show')) {
 }
 
 
-//	Check to see if any were cleared or hidden here
+// Check to see if any were cleared or hidden here
 
 $pageerror = qa_admin_check_clicks();
 
 
-//	Remove questions the user has no permission to hide/show
+// Remove questions the user has no permission to hide/show
 
 if (qa_user_permit_error('permit_hide_show')) { // if user not allowed to show/hide all posts
 	foreach ($questions as $index => $question) {
@@ -64,12 +63,12 @@ if (qa_user_permit_error('permit_hide_show')) { // if user not allowed to show/h
 }
 
 
-//	Get information for users
+// Get information for users
 
 $usershtml = qa_userids_handles_html(qa_any_get_userids_handles($questions));
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

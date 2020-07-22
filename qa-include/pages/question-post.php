@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-question-post.php
 	Description: More control for question page if it's submitted by HTTP POST
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -32,13 +31,13 @@ require_once QA_INCLUDE_DIR . 'pages/question-submit.php';
 $code = qa_post_text('code');
 
 
-//	Process general cancel button
+// Process general cancel button
 
 if (qa_clicked('docancel'))
 	qa_page_q_refresh($pagestart);
 
 
-//	Process incoming answer (or button)
+// Process incoming answer (or button)
 
 if ($question['answerbutton']) {
 	if (qa_clicked('q_doanswer'))
@@ -58,7 +57,10 @@ if ($question['answerbutton']) {
 				break;
 
 			case 'approve':
-				$pageerror = qa_lang_html('question/answer_must_be_approved');
+				$pageerror = strtr(qa_lang_html('question/answer_must_be_approved'), array(
+					'^1' => '<a href="' . qa_path_html('account') . '">',
+					'^2' => '</a>',
+				));
 				break;
 
 			case 'limit':
@@ -86,7 +88,7 @@ if ($question['answerbutton']) {
 }
 
 
-//	Process close buttons for question
+// Process close buttons for question
 
 if ($question['closeable']) {
 	if (qa_clicked('q_doclose'))
@@ -98,12 +100,12 @@ if ($question['closeable']) {
 		else
 			$formtype = 'q_close'; // keep editing if an error
 
-	} elseif (($pagestate == 'close') && qa_page_q_permit_edit($question, 'permit_close_q', $pageerror))
+	} elseif ($pagestate == 'close' && qa_page_q_permit_edit($question, 'permit_close_q', $pageerror))
 		$formtype = 'q_close';
 }
 
 
-//	Process any single click operations or delete button for question
+// Process any single click operations or delete button for question
 
 if (qa_page_q_single_click_q($question, $answers, $commentsfollows, $closepost, $pageerror))
 	qa_page_q_refresh($pagestart);
@@ -114,7 +116,7 @@ if (qa_clicked('q_dodelete') && $question['deleteable'] && qa_page_q_click_check
 }
 
 
-//	Process edit or save button for question
+// Process edit or save button for question
 
 if ($question['editbutton'] || $question['retagcatbutton']) {
 	if (qa_clicked('q_doedit'))
@@ -140,7 +142,7 @@ if ($question['editbutton'] || $question['retagcatbutton']) {
 }
 
 
-//	Process adding a comment to question (shows form or processes it)
+// Process adding a comment to question (shows form or processes it)
 
 if ($question['commentbutton']) {
 	if (qa_clicked('q_docomment'))
@@ -151,7 +153,7 @@ if ($question['commentbutton']) {
 }
 
 
-//	Process clicked buttons for answers
+// Process clicked buttons for answers
 
 foreach ($answers as $answerid => $answer) {
 	$prefix = 'a' . $answerid . '_';
@@ -198,7 +200,7 @@ foreach ($answers as $answerid => $answer) {
 }
 
 
-//	Process hide, show, delete, flag, unflag, edit or save button for comments
+// Process hide, show, delete, flag, unflag, edit or save button for comments
 
 foreach ($commentsfollows as $commentid => $comment) {
 	if ($comment['basetype'] == 'C') {
@@ -220,7 +222,7 @@ foreach ($commentsfollows as $commentid => $comment) {
 					$formtype = 'c_edit';
 					$formpostid = $commentid; // keep editing if an error
 				}
-			} elseif (($pagestate == ('edit-' . $commentid)) && qa_page_q_permit_edit($comment, 'permit_edit_c', $pageerror)) {
+			} elseif ($pagestate == ('edit-' . $commentid) && qa_page_q_permit_edit($comment, 'permit_edit_c', $pageerror)) {
 				$formtype = 'c_edit';
 				$formpostid = $commentid;
 			}
@@ -229,7 +231,7 @@ foreach ($commentsfollows as $commentid => $comment) {
 }
 
 
-//	Functions used above - also see functions in qa-page-question-submit.php (which are shared with Ajax)
+// Functions used above - also see functions in /qa-include/pages/question-submit.php (which are shared with Ajax)
 
 /*
 	Redirects back to the question page, with the specified parameters
@@ -390,7 +392,7 @@ function qa_page_q_edit_q_form(&$qa_content, $question, $in, $errors, $completet
 	}
 
 	if ($question['isbyuser']) {
-		if (!qa_is_logged_in())
+		if (!qa_is_logged_in() && qa_opt('allow_anonymous_naming'))
 			qa_set_up_name_field($qa_content, $form['fields'], isset($in['name']) ? $in['name'] : @$question['name'], 'q_');
 
 		qa_set_up_notify_fields($qa_content, $form['fields'], 'Q', qa_get_logged_in_email(),
@@ -441,7 +443,7 @@ function qa_page_q_edit_q_submit($question, $answers, $commentsfollows, $closepo
 		$userlevel = null;
 
 	if ($question['isbyuser']) {
-		$in['name'] = qa_post_text('q_name');
+		$in['name'] = qa_opt('allow_anonymous_naming') ? qa_post_text('q_name') : null;
 		$in['notify'] = qa_post_text('q_notify') !== null;
 		$in['email'] = qa_post_text('q_email');
 	}
@@ -577,7 +579,8 @@ function qa_page_q_close_q_submit($question, $closepost, &$in, &$errors)
 	$handle = qa_get_logged_in_handle();
 	$cookieid = qa_cookie_get();
 
-	$isduplicateurl = filter_var($in['details'], FILTER_VALIDATE_URL);
+	$sanitizedUrl = filter_var($in['details'], FILTER_SANITIZE_URL);
+	$isduplicateurl = filter_var($sanitizedUrl, FILTER_VALIDATE_URL);
 
 	if (!qa_check_form_security_code('close-' . $question['postid'], qa_post_text('code'))) {
 		$errors['details'] = qa_lang_html('misc/form_security_again');
@@ -587,7 +590,7 @@ function qa_page_q_close_q_submit($question, $closepost, &$in, &$errors)
 		// b) There could be a question title which is just a number, e.g. http://qa.mysite.com/478/12345/...
 		// so we check if more than one question could match, and if so, show an error
 
-		$parts = preg_split('|[=/&]|', $in['details'], -1, PREG_SPLIT_NO_EMPTY);
+		$parts = preg_split('|[=/&]|', $sanitizedUrl, -1, PREG_SPLIT_NO_EMPTY);
 		$keypostids = array();
 
 		foreach ($parts as $part) {
@@ -677,7 +680,7 @@ function qa_page_q_edit_a_form(&$qa_content, $id, $answer, $question, $answers, 
 		),
 	);
 
-	//	Show option to convert this answer to a comment, if appropriate
+	// Show option to convert this answer to a comment, if appropriate
 
 	$commentonoptions = array();
 
@@ -726,10 +729,10 @@ function qa_page_q_edit_a_form(&$qa_content, $id, $answer, $question, $answers, 
 		));
 	}
 
-	//	Show name and notification field if appropriate
+	// Show name and notification field if appropriate
 
 	if ($answer['isbyuser']) {
-		if (!qa_is_logged_in())
+		if (!qa_is_logged_in() && qa_opt('allow_anonymous_naming'))
 			qa_set_up_name_field($qa_content, $form['fields'], isset($in['name']) ? $in['name'] : @$answer['name'], $prefix);
 
 		qa_set_up_notify_fields($qa_content, $form['fields'], 'A', qa_get_logged_in_email(),
@@ -764,7 +767,7 @@ function qa_page_q_edit_a_submit($answer, $question, $answers, $commentsfollows,
 	);
 
 	if ($answer['isbyuser']) {
-		$in['name'] = qa_post_text($prefix . 'name');
+		$in['name'] = qa_opt('allow_anonymous_naming') ? qa_post_text($prefix . 'name') : null;
 		$in['notify'] = qa_post_text($prefix . 'notify') !== null;
 		$in['email'] = qa_post_text($prefix . 'email');
 	}
@@ -838,7 +841,6 @@ function qa_page_q_do_comment($question, $parent, $commentsfollows, $pagestart, 
 	// The other option ('level') prevents the comment button being shown, in qa_page_q_post_rules(...)
 
 	$parentid = $parent['postid'];
-	$answer = ($question['postid'] == $parentid) ? null : $parent;
 
 	switch (qa_user_post_permit_error('permit_post_c', $parent, QA_LIMIT_COMMENTS)) {
 		case 'login':
@@ -850,7 +852,10 @@ function qa_page_q_do_comment($question, $parent, $commentsfollows, $pagestart, 
 			break;
 
 		case 'approve':
-			$error = qa_lang_html('question/comment_must_be_approved');
+			$error = strtr(qa_lang_html('question/comment_must_be_approved'), array(
+				'^1' => '<a href="' . qa_path_html('account') . '">',
+				'^2' => '</a>',
+			));
 			break;
 
 		case 'limit':
@@ -935,7 +940,7 @@ function qa_page_q_edit_c_form(&$qa_content, $id, $comment, $in, $errors)
 	);
 
 	if ($comment['isbyuser']) {
-		if (!qa_is_logged_in())
+		if (!qa_is_logged_in() && qa_opt('allow_anonymous_naming'))
 			qa_set_up_name_field($qa_content, $form['fields'], isset($in['name']) ? $in['name'] : @$comment['name'], $prefix);
 
 		qa_set_up_notify_fields($qa_content, $form['fields'], 'C', qa_get_logged_in_email(),
@@ -967,7 +972,7 @@ function qa_page_q_edit_c_submit($comment, $question, $parent, &$in, &$errors)
 	$in = array();
 
 	if ($comment['isbyuser']) {
-		$in['name'] = qa_post_text($prefix . 'name');
+		$in['name'] = qa_opt('allow_anonymous_naming') ? qa_post_text($prefix . 'name') : null;
 		$in['notify'] = qa_post_text($prefix . 'notify') !== null;
 		$in['email'] = qa_post_text($prefix . 'email');
 	}

@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-comments.php
 	Description: Controller for page listing recent comments on questions
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -34,7 +33,7 @@ $countslugs = count($categoryslugs);
 $userid = qa_get_logged_in_userid();
 
 
-//	Get list of comments with related questions, plus category information
+// Get list of comments with related questions, plus category information
 
 list($questions, $categories, $categoryid) = qa_db_select_with_pending(
 	qa_db_recent_c_qs_selectspec($userid, 0, $categoryslugs),
@@ -56,7 +55,7 @@ if ($countslugs) {
 }
 
 
-//	Prepare and return content for theme
+// Prepare and return content for theme
 
 return qa_q_list_page_content(
 	qa_any_sort_and_dedupe($questions), // questions

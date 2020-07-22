@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-default.php
 	Description: Controller for most admin pages which just contain options
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -32,17 +31,17 @@ require_once QA_INCLUDE_DIR . 'app/options.php';
 require_once QA_INCLUDE_DIR . 'app/admin.php';
 
 
-//	Pages handled by this controller: general, emails, users, layout, viewing, lists, posting, permissions, feeds, spam, caching, mailing
+// Pages handled by this controller: general, emails, users, layout, viewing, lists, posting, permissions, feeds, spam, caching, mailing
 
 $adminsection = strtolower(qa_request_part(1));
 
 
-//	Get list of categories and all options
+// Get list of categories and all options
 
 $categories = qa_db_select_with_pending(qa_db_category_nav_selectspec(null, true));
 
 
-//	See if we need to redirect
+// See if we need to redirect
 
 if (empty($adminsection)) {
 	$subnav = qa_admin_sub_navigation();
@@ -56,13 +55,13 @@ if (empty($adminsection)) {
 }
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (!qa_admin_check_privileges($qa_content))
 	return $qa_content;
 
 
-//	For non-text options, lists of option types, minima and maxima
+// For non-text options, lists of option types, minima and maxima
 
 $optiontype = array(
 	'avatar_message_list_size' => 'number',
@@ -137,15 +136,16 @@ $optiontype = array(
 	'show_full_date_days' => 'number',
 	'smtp_port' => 'number',
 
+	'allow_anonymous_naming' => 'checkbox',
 	'allow_change_usernames' => 'checkbox',
 	'allow_close_questions' => 'checkbox',
+	'allow_close_own_questions' => 'checkbox',
 	'allow_login_email_only' => 'checkbox',
 	'allow_multi_answers' => 'checkbox',
 	'allow_private_messages' => 'checkbox',
 	'allow_user_walls' => 'checkbox',
 	'allow_self_answer' => 'checkbox',
 	'allow_view_q_bots' => 'checkbox',
-	'approve_user_required' => 'checkbox',
 	'avatar_allow_gravatar' => 'checkbox',
 	'avatar_allow_upload' => 'checkbox',
 	'avatar_default_show' => 'checkbox',
@@ -193,6 +193,7 @@ $optiontype = array(
 	'notify_admin_q_post' => 'checkbox',
 	'notify_users_default' => 'checkbox',
 	'q_urls_remove_accents' => 'checkbox',
+	'recalc_hotness_q_view' => 'checkbox',
 	'register_notify_admin' => 'checkbox',
 	'show_c_reply_buttons' => 'checkbox',
 	'show_compact_numbers' => 'checkbox',
@@ -229,6 +230,7 @@ $optiontype = array(
 	'minify_html' => 'checkbox',
 	'votes_separated' => 'checkbox',
 	'voting_on_as' => 'checkbox',
+	'voting_on_cs' => 'checkbox',
 	'voting_on_q_page_only' => 'checkbox',
 	'voting_on_qs' => 'checkbox',
 
@@ -279,7 +281,7 @@ $optionminimum = array(
 );
 
 
-//	Define the options to show (and some other visual stuff) based on request
+// Define the options to show (and some other visual stuff) based on request
 
 $formstyle = 'tall';
 $checkboxtodisplay = null;
@@ -320,7 +322,7 @@ switch ($adminsection) {
 			require_once QA_INCLUDE_DIR . 'util/image.php';
 
 			array_push($showoptions, 'show_custom_register', 'custom_register', 'show_register_terms', 'register_terms', 'show_notice_welcome', 'notice_welcome', 'show_custom_welcome', 'custom_welcome',
-				'', 'allow_login_email_only', 'allow_change_usernames', 'register_notify_admin', 'suspend_register_users',
+				'', 'allow_login_email_only', 'allow_change_usernames', 'register_notify_admin', 'suspend_register_users', '', 'block_bad_usernames',
 				'', 'allow_private_messages', 'show_message_history', 'page_size_pms', 'allow_user_walls', 'page_size_wall',
 				'', 'avatar_allow_gravatar');
 
@@ -357,7 +359,7 @@ switch ($adminsection) {
 				'avatar_q_page_a_size' => 'option_avatar_allow_gravatar || option_avatar_allow_upload',
 				'avatar_q_page_c_size' => 'option_avatar_allow_gravatar || option_avatar_allow_upload',
 				'avatar_q_list_size' => 'option_avatar_allow_gravatar || option_avatar_allow_upload',
-				'avatar_message_list_size' => 'option_allow_private_messages || option_allow_user_walls',
+				'avatar_message_list_size' => '(option_avatar_allow_gravatar || option_avatar_allow_upload) && (option_allow_private_messages || option_allow_user_walls)',
 			));
 		}
 
@@ -386,8 +388,8 @@ switch ($adminsection) {
 	case 'viewing':
 		$subtitle = 'admin/viewing_title';
 		$showoptions = array(
-			'q_urls_title_length', 'q_urls_remove_accents', 'do_count_q_views', 'show_view_counts', 'show_view_count_q_page', '',
-			'voting_on_qs', 'voting_on_q_page_only', 'voting_on_as', 'votes_separated', '',
+			'q_urls_title_length', 'q_urls_remove_accents', 'do_count_q_views', 'show_view_counts', 'show_view_count_q_page', 'recalc_hotness_q_view', '',
+			'voting_on_qs', 'voting_on_q_page_only', 'voting_on_as', 'voting_on_cs', 'votes_separated', '',
 			'show_url_links', 'links_in_new_window', 'show_when_created', 'show_full_date_days'
 		);
 
@@ -422,6 +424,7 @@ switch ($adminsection) {
 		$checkboxtodisplay = array(
 			'show_view_counts' => 'option_do_count_q_views',
 			'show_view_count_q_page' => 'option_do_count_q_views',
+			'recalc_hotness_q_view' => 'option_do_count_q_views',
 			'votes_separated' => 'option_voting_on_qs || option_voting_on_as',
 			'voting_on_q_page_only' => 'option_voting_on_qs',
 			'show_full_date_days' => 'option_show_when_created',
@@ -464,7 +467,7 @@ switch ($adminsection) {
 
 		$subtitle = 'admin/posting_title';
 
-		$showoptions = array('do_close_on_select', 'allow_close_questions', 'allow_self_answer', 'allow_multi_answers', 'follow_on_as', 'comment_on_qs', 'comment_on_as', '');
+		$showoptions = array('do_close_on_select', 'allow_close_questions', 'allow_close_own_questions', 'allow_self_answer', 'allow_multi_answers', 'follow_on_as', 'comment_on_qs', 'comment_on_as', 'allow_anonymous_naming', '');
 
 		if (count(qa_list_modules('editor')) > 1)
 			array_push($showoptions, 'editor_for_qs', 'editor_for_as', 'editor_for_cs', '');
@@ -486,6 +489,7 @@ switch ($adminsection) {
 		$formstyle = 'wide';
 
 		$checkboxtodisplay = array(
+			'allow_close_own_questions' => 'option_allow_close_questions',
 			'editor_for_cs' => 'option_comment_on_qs || option_comment_on_as',
 			'custom_ask' => 'option_show_custom_ask',
 			'extra_field_prompt' => 'option_extra_field_active',
@@ -559,7 +563,7 @@ switch ($adminsection) {
 		$getoptions = qa_get_options(array('feedback_enabled', 'permit_post_q', 'permit_post_a', 'permit_post_c'));
 
 		if (!QA_FINAL_EXTERNAL_USERS)
-			array_push($showoptions, 'confirm_user_emails', 'confirm_user_required', 'moderate_users', 'approve_user_required', '');
+			array_push($showoptions, 'confirm_user_emails', 'confirm_user_required', 'moderate_users', '');
 
 		$captchamodules = qa_list_modules('captcha');
 
@@ -610,7 +614,7 @@ switch ($adminsection) {
 
 		$showoptions[] = '';
 
-		if (qa_opt('voting_on_qs') || qa_opt('voting_on_as'))
+		if (qa_opt('voting_on_qs') || qa_opt('voting_on_as') || qa_opt('voting_on_cs'))
 			array_push($showoptions, 'max_rate_ip_votes', 'max_rate_user_votes');
 
 		array_push($showoptions, 'max_rate_ip_flags', 'max_rate_user_flags', 'max_rate_ip_uploads', 'max_rate_user_uploads');
@@ -622,7 +626,6 @@ switch ($adminsection) {
 
 		$checkboxtodisplay = array(
 			'confirm_user_required' => 'option_confirm_user_emails',
-			'approve_user_required' => 'option_moderate_users',
 			'captcha_on_unapproved' => 'option_moderate_users',
 			'captcha_on_unconfirmed' => 'option_confirm_user_emails && !(option_moderate_users && option_captcha_on_unapproved)',
 			'captcha_module' => 'option_captcha_on_register || option_captcha_on_anon_post || (option_confirm_user_emails && option_captcha_on_unconfirmed) || (option_moderate_users && option_captcha_on_unapproved) || option_captcha_on_reset_password || option_captcha_on_feedback',
@@ -647,7 +650,7 @@ switch ($adminsection) {
 		$subtitle = 'admin/caching_title';
 		$formstyle = 'wide';
 
-		$showoptions = array('caching_enabled', 'caching_q_start', 'caching_q_time', 'caching_qlist_time', 'caching_catwidget_time');
+		$showoptions = array('caching_enabled', 'caching_driver', 'caching_q_start', 'caching_q_time', 'caching_catwidget_time');
 
 		break;
 
@@ -673,7 +676,7 @@ switch ($adminsection) {
 }
 
 
-//	Filter out blanks to get list of valid options
+// Filter out blanks to get list of valid options
 
 $getoptions = array();
 foreach ($showoptions as $optionname) {
@@ -682,7 +685,7 @@ foreach ($showoptions as $optionname) {
 }
 
 
-//	Process user actions
+// Process user actions
 
 $errors = array();
 
@@ -712,9 +715,7 @@ else {
 			foreach ($getoptions as $optionname) {
 				$optionvalue = qa_post_text('option_' . $optionname);
 
-				if (
-					@$optiontype[$optionname] == 'number' ||
-					@$optiontype[$optionname] == 'checkbox' ||
+				if (@$optiontype[$optionname] == 'number' || @$optiontype[$optionname] == 'checkbox' ||
 					(@$optiontype[$optionname] == 'number-blank' && strlen($optionvalue))
 				)
 					$optionvalue = (int)$optionvalue;
@@ -746,6 +747,7 @@ else {
 						break;
 
 					case 'block_bad_words':
+					case 'block_bad_usernames':
 						require_once QA_INCLUDE_DIR . 'util/string.php';
 						$optionvalue = implode(' , ', qa_block_words_explode($optionvalue));
 						break;
@@ -756,7 +758,7 @@ else {
 
 			$formokhtml = qa_lang_html('admin/options_saved');
 
-			//	Uploading default avatar
+			// Uploading default avatar
 			if (is_array(@$_FILES['avatar_default_file'])) {
 				$avatarfileerror = $_FILES['avatar_default_file']['error'];
 
@@ -800,7 +802,7 @@ else {
 }
 
 
-//	Mailings management
+// Mailings management
 
 if ($adminsection == 'mailing') {
 	if (qa_clicked('domailingtest') || qa_clicked('domailingstart') || qa_clicked('domailingresume') || qa_clicked('domailingcancel')) {
@@ -852,12 +854,12 @@ if ($adminsection == 'mailing') {
 }
 
 
-//	Get the actual options
+// Get the actual options
 
 $options = qa_get_options($getoptions);
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 
@@ -905,7 +907,6 @@ if ($recalchotness) {
 	);
 
 } elseif ($startmailing) {
-
 	if (qa_post_text('has_js')) {
 		$qa_content['form']['ok'] = '<span id="mailing_ok">' . qa_html($mailingprogress) . '</span>';
 
@@ -914,7 +915,7 @@ if ($recalchotness) {
 		);
 
 	} else { // rudimentary non-Javascript version of mass mailing loop
-		echo '<tt>';
+		echo '<code>';
 
 		while (true) {
 			qa_mailing_perform_step();
@@ -930,7 +931,7 @@ if ($recalchotness) {
 			sleep(1);
 		}
 
-		echo qa_lang_html('admin/mailing_complete') . '</tt><p><a href="' . qa_path_html('admin/mailing') . '">' . qa_lang_html('admin/admin_title') . ' - ' . qa_lang_html('admin/mailing_title') . '</a>';
+		echo qa_lang_html('admin/mailing_complete').'</code><p><a href="'.qa_path_html('admin/mailing').'">'.qa_lang_html('admin/admin_title').' - '.qa_lang_html('admin/mailing_title').'</a>';
 
 		qa_exit();
 	}
@@ -1012,7 +1013,7 @@ foreach ($showoptions as $optionname) {
 
 				foreach ($rawoptions as $rawoption) {
 					$neatoptions[$rawoption] =
-						'<iframe src="' . qa_path_html('url/test/' . QA_URL_TEST_STRING, array('dummy' => '', 'param' => QA_URL_TEST_STRING), null, $rawoption) . '" width="20" height="16" style="vertical-align:middle; border:0" scrolling="no" frameborder="0"></iframe>&nbsp;' .
+						'<iframe src="' . qa_path_html('url/test/' . QA_URL_TEST_STRING, array('dummy' => '', 'param' => QA_URL_TEST_STRING), null, $rawoption) . '" width="20" height="16" style="vertical-align:middle; border:0" scrolling="no"></iframe>&nbsp;' .
 						'<small>' .
 						qa_html(urldecode(qa_path('123/why-do-birds-sing', null, '/', $rawoption))) .
 						(($rawoption == QA_URL_FORMAT_NEAT) ? strtr(qa_lang_html('admin/neat_urls_note'), array(
@@ -1041,7 +1042,7 @@ foreach ($showoptions as $optionname) {
 				$metadata = $metadataUtil->fetchFromAddonPath($themedirectory);
 				if (empty($metadata)) {
 					// limit theme parsing to first 8kB
-					$contents = file_get_contents($themedirectory . '/qa-styles.css', false, null, -1, 8192);
+					$contents = @file_get_contents($themedirectory . '/qa-styles.css', false, null, 0, 8192);
 					$metadata = qa_addon_metadata($contents, 'Theme');
 				}
 
@@ -1075,7 +1076,7 @@ foreach ($showoptions as $optionname) {
 					$updatehtml = '(<span id="' . $elementid . '">...</span>)';
 
 					$qa_content['script_onloads'][] = array(
-						"qa_version_check(" . qa_js($metadata['update_uri']) . ", " . qa_js($metadata['version'], true) . ", " . qa_js($elementid) . ");"
+						"qa_version_check(" . qa_js($metadata['update_uri']) . ", " . qa_js($metadata['version'], true) . ", " . qa_js($elementid) . ", false);"
 					);
 
 				}
@@ -1203,6 +1204,10 @@ foreach ($showoptions as $optionname) {
 				$optionfield['note'] = qa_lang_html('admin/characters');
 				break;
 
+			case 'recalc_hotness_q_view':
+				$optionfield['note'] = '<span class="qa-form-wide-help" title="' . qa_lang_html('admin/recalc_hotness_q_view_note') . '">?</span>';
+				break;
+
 			case 'min_num_q_tags':
 			case 'max_num_q_tags':
 				$optionfield['note'] = qa_lang_html_sub('main/x_tags', ''); // this to avoid language checking error: a_lang('main/1_tag')
@@ -1243,6 +1248,7 @@ foreach ($showoptions as $optionname) {
 				break;
 
 			case 'block_bad_words':
+			case 'block_bad_usernames':
 				$optionfield['style'] = 'tall';
 				$optionfield['rows'] = 4;
 				$optionfield['note'] = qa_lang_html('admin/block_words_note');
@@ -1300,7 +1306,7 @@ foreach ($showoptions as $optionname) {
 				foreach ($searchmodules as $modulename => $module) {
 					$selectoptions[qa_html($modulename)] = strlen($modulename) ? qa_html($modulename) : qa_lang_html('options/option_default');
 
-					if (($modulename == $value) && method_exists($module, 'admin_form')) {
+					if ($modulename == $value && method_exists($module, 'admin_form')) {
 						$optionfield['note'] = '<a href="' . qa_admin_module_options_path('search', $modulename) . '">' . qa_lang_html('admin/options') . '</a>';
 					}
 				}
@@ -1343,11 +1349,14 @@ foreach ($showoptions as $optionname) {
 				break;
 
 			case 'permit_view_q_page':
+			case 'permit_view_new_users_page':
+			case 'permit_view_special_users_page':
 			case 'permit_post_q':
 			case 'permit_post_a':
 			case 'permit_post_c':
 			case 'permit_vote_q':
 			case 'permit_vote_a':
+			case 'permit_vote_c':
 			case 'permit_vote_down':
 			case 'permit_edit_q':
 			case 'permit_retag_cat':
@@ -1370,7 +1379,7 @@ foreach ($showoptions as $optionname) {
 				else
 					$optionfield['label'] = qa_lang_html('profile/' . $optionname) . ':';
 
-				if ($optionname == 'permit_view_q_page' || $optionname == 'permit_post_q' || $optionname == 'permit_post_a' || $optionname == 'permit_post_c' || $optionname == 'permit_anon_view_ips')
+				if (in_array($optionname, array('permit_view_q_page', 'permit_view_new_users_page', 'permit_view_special_users_page', 'permit_post_q', 'permit_post_a', 'permit_post_c', 'permit_anon_view_ips')))
 					$widest = QA_PERMIT_ALL;
 				elseif ($optionname == 'permit_close_q' || $optionname == 'permit_select_a' || $optionname == 'permit_moderate' || $optionname == 'permit_hide_show')
 					$widest = QA_PERMIT_POINTS;
@@ -1384,11 +1393,14 @@ foreach ($showoptions as $optionname) {
 				if ($optionname == 'permit_view_q_page') {
 					$narrowest = QA_PERMIT_APPROVED;
 					$dopoints = false;
+				} elseif ($optionname == 'permit_view_special_users_page' || $optionname == 'permit_view_new_users_page') {
+					$narrowest = QA_PERMIT_SUPERS;
+					$dopoints = false;
 				} elseif ($optionname == 'permit_edit_c' || $optionname == 'permit_close_q' || $optionname == 'permit_select_a' || $optionname == 'permit_moderate' || $optionname == 'permit_hide_show' || $optionname == 'permit_anon_view_ips')
 					$narrowest = QA_PERMIT_MODERATORS;
 				elseif ($optionname == 'permit_post_c' || $optionname == 'permit_edit_q' || $optionname == 'permit_retag_cat' || $optionname == 'permit_edit_a' || $optionname == 'permit_flag')
 					$narrowest = QA_PERMIT_EDITORS;
-				elseif ($optionname == 'permit_vote_q' || $optionname == 'permit_vote_a' || $optionname == 'permit_post_wall')
+				elseif ($optionname == 'permit_vote_q' || $optionname == 'permit_vote_a' || $optionname == 'permit_vote_c' || $optionname == 'permit_post_wall')
 					$narrowest = QA_PERMIT_APPROVED_POINTS;
 				elseif ($optionname == 'permit_delete_hidden' || $optionname == 'permit_edit_silent')
 					$narrowest = QA_PERMIT_ADMINS;
@@ -1413,6 +1425,7 @@ foreach ($showoptions as $optionname) {
 			case 'permit_post_c_points':
 			case 'permit_vote_q_points':
 			case 'permit_vote_a_points':
+			case 'permit_vote_c_points':
 			case 'permit_vote_down_points':
 			case 'permit_flag_points':
 			case 'permit_edit_q_points':
@@ -1544,6 +1557,13 @@ foreach ($showoptions as $optionname) {
 				$optionfield['suffix'] = qa_lang_html('admin/emails_per_minute');
 				break;
 
+			case 'caching_driver':
+				qa_optionfield_make_select($optionfield, array(
+					'filesystem' => qa_lang_html('options/caching_filesystem'),
+					'memcached' => qa_lang_html('options/caching_memcached'),
+				), $value, 'filesystem');
+				break;
+
 			case 'caching_q_time':
 			case 'caching_qlist_time':
 			case 'caching_catwidget_time':
@@ -1563,7 +1583,7 @@ foreach ($showoptions as $optionname) {
 }
 
 
-//	Extra items for specific pages
+// Extra items for specific pages
 
 switch ($adminsection) {
 	case 'users':
@@ -1783,8 +1803,47 @@ switch ($adminsection) {
 		break;
 
 	case 'caching':
-		$cacheManager = Q2A_Storage_CacheManager::getInstance();
-		$qa_content['error'] = $cacheManager->getError();
+		$cacheDriver = Q2A_Storage_CacheFactory::getCacheDriver();
+		$qa_content['error'] = $cacheDriver->getError();
+		$cacheStats = $cacheDriver->getStats();
+
+		$qa_content['form_2'] = array(
+			'tags' => 'method="post" action="' . qa_path_html('admin/recalc') . '"',
+
+			'title' => qa_lang_html('admin/caching_cleanup'),
+
+			'style' => 'wide',
+
+			'fields' => array(
+				'cache_files' => array(
+					'type' => 'static',
+					'label' => qa_lang_html('admin/caching_num_items'),
+					'value' => qa_html(qa_format_number($cacheStats['files'])),
+				),
+				'cache_size' => array(
+					'type' => 'static',
+					'label' => qa_lang_html('admin/caching_space_used'),
+					'value' => qa_html(qa_format_number($cacheStats['size'] / 1048576, 1) . ' MB'),
+				),
+			),
+
+			'buttons' => array(
+				'delete_expired' => array(
+					'label' => qa_lang_html('admin/caching_delete_expired'),
+					'tags' => 'name="docachetrim" onclick="return qa_recalc_click(this.name, this, ' . qa_js(qa_lang_html('admin/delete_stop')) . ', \'cachetrim_note\');"',
+					'note' => '<span id="cachetrim_note"></span>',
+				),
+				'delete_all' => array(
+					'label' => qa_lang_html('admin/caching_delete_all'),
+					'tags' => 'name="docacheclear" onclick="return qa_recalc_click(this.name, this, ' . qa_js(qa_lang_html('admin/delete_stop')) . ', \'cacheclear_note\');"',
+					'note' => '<span id="cacheclear_note"></span>',
+				),
+			),
+
+			'hidden' => array(
+				'code' => qa_get_form_security_code('admin/recalc'),
+			),
+		);
 		break;
 }
 

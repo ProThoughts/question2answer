@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-stats.php
 	Description: Controller for admin page showing usage statistics and clean-up buttons
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -31,16 +30,17 @@ require_once QA_INCLUDE_DIR . 'db/admin.php';
 require_once QA_INCLUDE_DIR . 'app/format.php';
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (!qa_admin_check_privileges($qa_content))
 	return $qa_content;
 
 
-//	Get the information to display
+// Get the information to display
 
 $qcount = (int)qa_opt('cache_qcount');
 $qcount_anon = qa_db_count_posts('Q', false);
+$qcount_unans = (int)qa_opt('cache_unaqcount');
 
 $acount = (int)qa_opt('cache_acount');
 $acount_anon = qa_db_count_posts('A', false);
@@ -49,7 +49,7 @@ $ccount = (int)qa_opt('cache_ccount');
 $ccount_anon = qa_db_count_posts('C', false);
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 
@@ -74,8 +74,7 @@ $qa_content['form'] = array(
 		'q2a_latest' => array(
 			'label' => qa_lang_html('admin/q2a_latest_version'),
 			'type' => 'custom',
-			'html' => '<iframe src="http://www.question2answer.org/question2answer-latest.php?version=' . urlencode(QA_VERSION) . '&language=' . urlencode(qa_opt('site_language')) .
-				'" width="100" height="16" style="vertical-align:middle; border:0; background:transparent;" allowTransparency="true" scrolling="no" frameborder="0"></iframe>',
+			'html' => '<span id="q2a-version">...</span>',
 		),
 
 		'break0' => array(
@@ -113,6 +112,11 @@ $qa_content['form'] = array(
 		'qcount' => array(
 			'label' => qa_lang_html('admin/total_qs'),
 			'value' => qa_html(qa_format_number($qcount)),
+		),
+
+		'qcount_unans' => array(
+			'label' => qa_lang_html('admin/total_qs_unans'),
+			'value' => qa_html(qa_format_number($qcount_unans)),
 		),
 
 		'qcount_users' => array(
@@ -273,6 +277,10 @@ if (defined('QA_BLOBS_DIRECTORY')) {
 
 $qa_content['script_rel'][] = 'qa-content/qa-admin.js?' . QA_VERSION;
 $qa_content['script_var']['qa_warning_recalc'] = qa_lang('admin/stop_recalc_warning');
+
+$qa_content['script_onloads'][] = array(
+	"qa_version_check('https://raw.githubusercontent.com/q2a/question2answer/master/VERSION.txt', " . qa_js(qa_html(QA_VERSION), true) . ", 'q2a-version', true);"
+);
 
 $qa_content['navigation']['sub'] = qa_admin_sub_navigation();
 

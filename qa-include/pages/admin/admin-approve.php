@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-approve.php
 	Description: Controller for admin page showing new users waiting for approval
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -29,13 +28,13 @@ require_once QA_INCLUDE_DIR . 'app/admin.php';
 require_once QA_INCLUDE_DIR . 'db/admin.php';
 
 
-//	Check we're not using single-sign on integration
+// Check we're not using single-sign on integration
 
 if (QA_FINAL_EXTERNAL_USERS)
 	qa_fatal_error('User accounts are handled by external code');
 
 
-//	Find most flagged questions, answers, comments
+// Find most flagged questions, answers, comments
 
 $userid = qa_get_logged_in_userid();
 
@@ -43,7 +42,7 @@ $users = qa_db_get_unapproved_users(qa_opt('page_size_users'));
 $userfields = qa_db_select_with_pending(qa_db_userfields_selectspec());
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (qa_get_logged_in_level() < QA_USER_LEVEL_MODERATOR) {
 	$qa_content = qa_content_prepare();
@@ -52,12 +51,12 @@ if (qa_get_logged_in_level() < QA_USER_LEVEL_MODERATOR) {
 }
 
 
-//	Check to see if any were approved or blocked here
+// Check to see if any were approved or blocked here
 
 $pageerror = qa_admin_check_clicks();
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

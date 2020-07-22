@@ -113,9 +113,9 @@ class qa_wysiwyg_editor
 				array(
 					'id' => 'wysiwyg_editor_upload_max_size_display',
 					'label' => 'Maximum size of uploads:',
-					'suffix' => 'MB (max '.qa_html(qa_format_number($this->bytes_to_mega(qa_get_max_upload_size()))).')',
+					'suffix' => 'MB (max '.qa_html(number_format($this->bytes_to_mega(qa_get_max_upload_size()), 1)).')',
 					'type' => 'number',
-					'value' => qa_html(number_format($this->bytes_to_mega(qa_opt('wysiwyg_editor_upload_max_size')))),
+					'value' => qa_html(number_format($this->bytes_to_mega(qa_opt('wysiwyg_editor_upload_max_size')), 1)),
 					'tags' => 'name="wysiwyg_editor_upload_max_size_field"',
 				),
 
@@ -233,6 +233,9 @@ class qa_wysiwyg_editor
 				);
 			}
 			else {
+				// convert to text
+				qa_load_module('viewer', '');
+
 				return array(
 					'format' => '',
 					'content' => $this->html_to_text($html),

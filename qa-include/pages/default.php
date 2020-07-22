@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-default.php
 	Description: Controller for home page, Q&A listing page, custom pages and plugin pages
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -29,22 +28,23 @@ require_once QA_INCLUDE_DIR . 'db/selects.php';
 require_once QA_INCLUDE_DIR . 'app/format.php';
 
 
-//	Determine whether path begins with qa or not (question and answer listing can be accessed either way)
+// Determine whether path begins with qa or not (question and answer listing can be accessed either way)
 
 $requestparts = explode('/', qa_request());
 $explicitqa = (strtolower($requestparts[0]) == 'qa');
 
-if ($explicitqa)
+if ($explicitqa) {
 	$slugs = array_slice($requestparts, 1);
-elseif (strlen($requestparts[0]))
+} elseif (strlen($requestparts[0])) {
 	$slugs = $requestparts;
-else
+} else {
 	$slugs = array();
+}
 
 $countslugs = count($slugs);
 
 
-//	Get list of questions, other bits of information that might be useful
+// Get list of questions, other bits of information that might be useful
 
 $userid = qa_get_logged_in_userid();
 
@@ -53,11 +53,11 @@ list($questions1, $questions2, $categories, $categoryid, $custompage) = qa_db_se
 	qa_db_recent_a_qs_selectspec($userid, 0, $slugs),
 	qa_db_category_nav_selectspec($slugs, false, false, true),
 	$countslugs ? qa_db_slugs_to_category_id_selectspec($slugs) : null,
-	(($countslugs == 1) && !$explicitqa) ? qa_db_page_full_selectspec($slugs[0], false) : null
+	($countslugs == 1 && !$explicitqa) ? qa_db_page_full_selectspec($slugs[0], false) : null
 );
 
 
-//	First, if this matches a custom page, return immediately with that page's content
+// First, if this matches a custom page, return immediately with that page's content
 
 if (isset($custompage) && !($custompage['flags'] & QA_PAGE_FLAGS_EXTERNAL)) {
 	qa_set_template('custom-' . $custompage['pageid']);
@@ -79,22 +79,24 @@ if (isset($custompage) && !($custompage['flags'] & QA_PAGE_FLAGS_EXTERNAL)) {
 			);
 		}
 
-	} else
+	} else {
 		$qa_content['error'] = qa_lang_html('users/no_permission');
+	}
 
 	return $qa_content;
 }
 
 
-//	Then, see if we should redirect because the 'qa' page is the same as the home page
+// Then, see if we should redirect because the 'qa' page is the same as the home page
 
-if ($explicitqa && (!qa_is_http_post()) && !qa_has_custom_home())
+if ($explicitqa && !qa_is_http_post() && !qa_has_custom_home()) {
 	qa_redirect(qa_category_path_request($categories, $categoryid), $_GET);
+}
 
 
-//	Then, if there's a slug that matches no category, check page modules provided by plugins
+// Then, if there's a slug that matches no category, check page modules provided by plugins
 
-if ((!$explicitqa) && $countslugs && !isset($categoryid)) {
+if (!$explicitqa && $countslugs && !isset($categoryid)) {
 	$pagemodules = qa_load_modules_with('page', 'match_request');
 	$request = qa_request();
 
@@ -108,9 +110,9 @@ if ((!$explicitqa) && $countslugs && !isset($categoryid)) {
 }
 
 
-//	Then, check whether we are showing a custom home page
+// Then, check whether we are showing a custom home page
 
-if ((!$explicitqa) && (!$countslugs) && qa_opt('show_custom_home')) {
+if (!$explicitqa && !$countslugs && qa_opt('show_custom_home')) {
 	qa_set_template('custom');
 	$qa_content = qa_content_prepare();
 	$qa_content['title'] = qa_html(qa_opt('custom_home_heading'));
@@ -119,7 +121,7 @@ if ((!$explicitqa) && (!$countslugs) && qa_opt('show_custom_home')) {
 }
 
 
-//	If we got this far, it's a good old-fashioned Q&A listing page
+// If we got this far, it's a good old-fashioned Q&A listing page
 
 require_once QA_INCLUDE_DIR . 'app/q-list.php';
 
@@ -128,8 +130,9 @@ $questions = qa_any_sort_and_dedupe(array_merge($questions1, $questions2));
 $pagesize = qa_opt('page_size_home');
 
 if ($countslugs) {
-	if (!isset($categoryid))
+	if (!isset($categoryid)) {
 		return include QA_INCLUDE_DIR . 'qa-page-not-found.php';
+	}
 
 	$categorytitlehtml = qa_html($categories[$categoryid]['title']);
 	$sometitle = qa_lang_html_sub('main/recent_qs_as_in_x', $categorytitlehtml);
@@ -141,7 +144,7 @@ if ($countslugs) {
 }
 
 
-//	Prepare and return content for theme for Q&A listing page
+// Prepare and return content for theme for Q&A listing page
 
 $qa_content = qa_q_list_page_content(
 	$questions, // questions

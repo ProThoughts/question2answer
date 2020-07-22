@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-login.php
 	Description: Controller for login page
 
 
@@ -21,21 +20,29 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
 
-//	Check we're not using Q2A's single-sign on integration and that we're not logged in
-
-if (QA_FINAL_EXTERNAL_USERS)
-	qa_fatal_error('User login is handled by external code');
-
-if (qa_is_logged_in())
+if (qa_is_logged_in()) {
 	qa_redirect('');
+}
+
+// Check we're not using Q2A's single-sign on integration and that we're not logged in
+if (QA_FINAL_EXTERNAL_USERS) {
+	$request = qa_request();
+	$topath = qa_get('to'); // lets user switch between login and register without losing destination page
+	$userlinks = qa_get_login_links(qa_path_to_root(), isset($topath) ? $topath : qa_path($request, $_GET, ''));
+
+	if (!empty($userlinks['login'])) {
+		qa_redirect_raw($userlinks['login']);
+	}
+	qa_fatal_error('User login should be handled by external code');
+}
 
 
-//	Process submitted form after checking we haven't reached rate limit
+// Process submitted form after checking we haven't reached rate limit
 
 $passwordsent = qa_get('ps');
 $emailexists = qa_get('ee');
@@ -119,7 +126,7 @@ if (qa_clicked('dologin') && (strlen($inemailhandle) || strlen($inpassword))) {
 }
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

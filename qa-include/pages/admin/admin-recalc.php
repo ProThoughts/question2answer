@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-recalc.php
 	Description: Handles admin-triggered recalculations if JavaScript disabled
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -29,13 +28,13 @@ require_once QA_INCLUDE_DIR . 'app/admin.php';
 require_once QA_INCLUDE_DIR . 'app/recalc.php';
 
 
-//	Check we have administrative privileges
+// Check we have administrative privileges
 
 if (!qa_admin_check_privileges($qa_content))
 	return $qa_content;
 
 
-//	Find out the operation
+// Find out the operation
 
 $allowstates = array(
 	'dorecountposts',
@@ -68,7 +67,7 @@ if ($recalcnow) {
 			<meta http-equiv="content-type" content="text/html; charset=utf-8">
 		</head>
 		<body>
-			<tt>
+			<code>
 
 	<?php
 
@@ -87,7 +86,7 @@ if ($recalcnow) {
 	}
 
 	?>
-			</tt>
+			</code>
 
 			<a href="<?php echo qa_path_html('admin/stats')?>"><?php echo qa_lang_html('admin/admin_title').' - '.qa_lang_html('admin/stats_title')?></a>
 		</body>

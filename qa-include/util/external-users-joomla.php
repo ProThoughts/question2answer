@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-external-users-joomla.php
 	Description: External user functions for basic Joomla integration
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -78,11 +77,11 @@ function qa_get_logged_in_user()
 			'level' => $level,
 		);
 
-        if ($user->block) {
-            $qa_user['blocked'] = true;
-        }
+		if ($user->block) {
+			$qa_user['blocked'] = true;
+		}
 
-        return $qa_user;
+		return $qa_user;
 	}
 
 	return null;

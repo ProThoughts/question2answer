@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-admin-widgets.php
 	Description: Controller for admin page for editing widgets
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../../');
 	exit;
 }
 
@@ -29,7 +28,7 @@ require_once QA_INCLUDE_DIR . 'app/admin.php';
 require_once QA_INCLUDE_DIR . 'db/selects.php';
 
 
-//	Get current list of widgets and determine the state of this admin page
+// Get current list of widgets and determine the state of this admin page
 
 $widgetid = qa_post_text('edit');
 if (!strlen($widgetid))
@@ -58,13 +57,13 @@ $module = qa_load_module('widget', @$editwidget['title']);
 $widgetfound = isset($module);
 
 
-//	Check admin privileges (do late to allow one DB query)
+// Check admin privileges (do late to allow one DB query)
 
 if (!qa_admin_check_privileges($qa_content))
 	return $qa_content;
 
 
-//	Define an array of relevant templates we can use
+// Define an array of relevant templates we can use
 
 $templatelangkeys = array(
 	'question' => 'admin/question_pages',
@@ -124,7 +123,7 @@ if (isset($module) && method_exists($module, 'allow_template')) {
 }
 
 
-//	Process saving an old or new widget
+// Process saving an old or new widget
 
 $securityexpired = false;
 
@@ -158,7 +157,7 @@ elseif (qa_clicked('dosavewidget')) {
 
 				$intags = implode(',', $intemplates);
 
-				//	Perform appropriate database action
+				// Perform appropriate database action
 
 				if (isset($editwidget['widgetid'])) { // changing existing widget
 					$widgetid = $editwidget['widgetid'];
@@ -176,7 +175,7 @@ elseif (qa_clicked('dosavewidget')) {
 }
 
 
-//	Prepare content for theme
+// Prepare content for theme
 
 $qa_content = qa_content_prepare();
 

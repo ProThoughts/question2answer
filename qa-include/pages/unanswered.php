@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-page-unanswered.php
 	Description: Controller for page listing recent questions without upvoted/selected/any answers
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -30,7 +29,7 @@ require_once QA_INCLUDE_DIR . 'app/format.php';
 require_once QA_INCLUDE_DIR . 'app/q-list.php';
 
 
-//	Get list of unanswered questions, allow per-category if QA_ALLOW_UNINDEXED_QUERIES set in qa-config.php
+// Get list of unanswered questions, allow per-category if QA_ALLOW_UNINDEXED_QUERIES set in qa-config.php
 
 if (QA_ALLOW_UNINDEXED_QUERIES)
 	$categoryslugs = qa_request_parts(1);
@@ -114,7 +113,7 @@ switch ($by) {
 }
 
 
-//	Prepare and return content for theme
+// Prepare and return content for theme
 
 $qa_content = qa_q_list_page_content(
 	$questions, // questions
@@ -123,7 +122,7 @@ $qa_content = qa_q_list_page_content(
 	@$count, // total count
 	$sometitle, // title if some questions
 	$nonetitle, // title if no questions
-	QA_ALLOW_UNINDEXED_QUERIES ? $categories : null, // categories for navigation (null if not shown on this page)
+	QA_ALLOW_UNINDEXED_QUERIES ? $categories : array(), // categories for navigation (null if not shown on this page)
 	QA_ALLOW_UNINDEXED_QUERIES ? $categoryid : null, // selected category id (null if not relevant)
 	false, // show question counts in category navigation
 	QA_ALLOW_UNINDEXED_QUERIES ? 'unanswered/' : null, // prefix for links in category navigation (null if no navigation)

@@ -3,7 +3,6 @@
 	Question2Answer by Gideon Greenspan and contributors
 	http://www.question2answer.org/
 
-	File: qa-include/qa-app-limits.php
 	Description: Monitoring and rate-limiting user actions (application level)
 
 
@@ -21,7 +20,7 @@
 */
 
 if (!defined('QA_VERSION')) { // don't allow this page to be requested directly from browser
-	header('Location: ../');
+	header('Location: ../../');
 	exit;
 }
 
@@ -133,8 +132,8 @@ function qa_limits_calc_remaining($action, $userlimits, $iplimits)
 	$period = (int)(qa_opt('db_time') / 3600);
 
 	return max(0, min(
-		$usermax - ((@$userlimits['period'] == $period) ? $userlimits['count'] : 0),
-		$ipmax - ((@$iplimits['period'] == $period) ? $iplimits['count'] : 0)
+		$usermax - (@$userlimits['period'] == $period ? $userlimits['count'] : 0),
+		$ipmax - (@$iplimits['period'] == $period ? $iplimits['count'] : 0)
 	));
 }
 
@@ -186,26 +185,28 @@ function qa_block_ips_explode($blockipstring)
  */
 function qa_block_ip_match($ip, $blockipclause)
 {
-	// check if the input parameters use the same IP version
-	if (
-		(strpos($ip, ".") !== false && strpos($blockipclause, ".") === false) ||
-		(strpos($ip, ".") === false && strpos($blockipclause, ".") !== false)
-	) {
-		return false;
+	$ipv4 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
+	$blockipv4 = filter_var($blockipclause, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
+
+	// allow faster return if IP and blocked IP are plain IPv4 strings (IPv6 requires expanding)
+	if ($ipv4 && $blockipv4) {
+		return $ip === $blockipclause;
 	}
 
 	if (filter_var($ip, FILTER_VALIDATE_IP)) {
 		if (preg_match('/^(.*)\-(.*)$/', $blockipclause, $matches)) {
+			// match IP range
 			if (filter_var($matches[1], FILTER_VALIDATE_IP) && filter_var($matches[2], FILTER_VALIDATE_IP)) {
 				return qa_ip_between($ip, $matches[1], $matches[2]);
 			}
 		} elseif (strlen($blockipclause)) {
+			// normalize IPv6 addresses
 			if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
 				$ip = qa_ipv6_expand($ip);
 				$blockipclause = qa_ipv6_expand($blockipclause);
 			}
 
-			// preg_quote misses hyphens but that is OK here
+			// expand wildcards; preg_quote misses hyphens but that is OK here
 			return preg_match('/^' . str_replace('\\*', '([0-9A-Fa-f]+)', preg_quote($blockipclause, '/')) . '$/', $ip) > 0;
 		}
 	}
@@ -229,7 +230,7 @@ function qa_ip_between($ip, $startip, $endip)
 	if (count($uip) != count($ustartip) || count($uip) != count($uendip))
 		return false;
 
-	foreach ($uip as $i=>$byte) {
+	foreach ($uip as $i => $byte) {
 		if ($byte < $ustartip[$i] || $byte > $uendip[$i]) {
 			return false;
 		}
